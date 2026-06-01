@@ -1,0 +1,29 @@
+{
+  "name": "whatsmygrade",
+  "version": "1.0.0",
+  "description": "WhatsMyGrade - Track Your Course Progress",
+  "private": true,
+  "scripts": {
+    "setup": "bash setup.sh",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build",
+    "backend:start": "cd backend && npm start",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "grades",
+    "education",
+    "full-stack"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
