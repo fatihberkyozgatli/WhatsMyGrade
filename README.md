@@ -2,6 +2,13 @@
 
 A full-stack web application for tracking course grades and calculating the scores needed to reach a target grade.
 
+## Features
+
+- Track courses and their grade components (exams, assignments, etc.)
+- Calculate the score needed on remaining work to reach a target grade
+- User authentication with per-user course data
+- Letter-grade scale mapping for final grade calculation
+
 ## Requirements
 
 Node.js (v16+), PostgreSQL (v12+)
