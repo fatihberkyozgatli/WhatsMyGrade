@@ -5,12 +5,11 @@ import { Link } from 'react-router-dom';
 interface CourseCardProps {
   course: Course;
   gradeData?: GradeCalculationResult;
-  currentGrade?: number | null;
   status?: string;
   onDelete?: (courseId: number, courseName: string) => void;
 }
 
-export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, currentGrade, status, onDelete }) => {
+export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, status, onDelete }) => {
   const getStatusColor = (status?: string) => {
     switch (status) {
       case 'Excellent':
@@ -47,7 +46,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, curre
   };
 
   const achievableGrade = getHighestAchievableGrade();
-  const displayGrade = currentGrade ?? gradeData?.currentGrade;
+  const displayGrade = gradeData?.currentGrade;
 
   const ungradedComponents = gradeData?.components?.filter(c => !c.graded).map(c => c.name) || [];
   const ungradedList = ungradedComponents.length > 0 ? ungradedComponents.join(' & ') : null;

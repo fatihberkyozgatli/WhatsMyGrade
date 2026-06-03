@@ -1,9 +1,3 @@
-export interface User {
-  id: number;
-  email: string;
-  name: string;
-}
-
 export interface Course {
   id: number;
   user_id: number;
@@ -27,13 +21,6 @@ export interface GradeComponent {
   updated_at: string;
 }
 
-export interface GradeScale {
-  [key: string]: {
-    min: number;
-    max: number;
-  };
-}
-
 export interface GradeCalculationResult {
   currentGrade: number | null;
   percentageGraded: number;
@@ -45,9 +32,4 @@ export interface GradeCalculationResult {
   status: string;
   components: GradeComponent[];
   weightWarning: string;
-}
-
-export interface AuthResponse {
-  user: User;
-  token: string;
 }

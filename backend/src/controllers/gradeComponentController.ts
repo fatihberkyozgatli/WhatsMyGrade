@@ -41,7 +41,7 @@ export const createComponent = async (req: AuthRequest, res: Response) => {
 
     const result = await pool.query(
       'INSERT INTO grade_components (course_id, name, weight, graded, grade, category) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [courseId, name, weight, graded || false, grade || null, category || null]
+      [courseId, name, weight, graded || false, grade ?? null, category || null]
     );
 
     res.status(201).json(result.rows[0]);

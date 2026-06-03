@@ -20,16 +20,8 @@ export const DashboardPage: React.FC = () => {
         const coursesResponse = await api.get('/courses');
         setCourses(coursesResponse.data);
 
-        const gradeDataMap: { [key: number]: GradeCalculationResult } = {};
-        for (const course of coursesResponse.data) {
-          try {
-            const calcResponse = await api.get(`/calculate/${course.id}`);
-            gradeDataMap[course.id] = calcResponse.data;
-          } catch (err) {
-            console.error(`Failed to fetch grades for course ${course.id}`);
-          }
-        }
-        setGradeData(gradeDataMap);
+        const calcResponse = await api.get('/calculate');
+        setGradeData(calcResponse.data);
       } catch (err: any) {
         setError('Failed to load courses');
         console.error(err);

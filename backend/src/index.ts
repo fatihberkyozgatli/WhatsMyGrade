@@ -9,7 +9,8 @@ import calculateRoutes from './routes/calculate';
 
 const app = express();
 
-app.use(cors());
+app.set('trust proxy', config.trust_proxy);
+app.use(cors({ origin: config.cors_origin }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
 import { useAuth } from '../AuthContext';
@@ -103,9 +103,9 @@ export const RegisterPage: React.FC = () => {
 
         <p className="text-center text-gray-500 text-sm mt-5">
           Already have an account?{' '}
-          <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

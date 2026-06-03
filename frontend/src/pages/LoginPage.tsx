@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
 import { useAuth } from '../AuthContext';
@@ -73,9 +73,9 @@ export const LoginPage: React.FC = () => {
 
         <p className="text-center text-gray-500 text-sm mt-5">
           Don't have an account?{' '}
-          <a href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
             Create one
-          </a>
+          </Link>
         </p>
       </div>
     </div>

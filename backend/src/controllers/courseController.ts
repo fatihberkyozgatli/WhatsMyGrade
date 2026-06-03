@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import pool from '../db';
 import { AuthRequest } from '../middleware';
+import { buildGradeScale } from '../constants';
 import Joi from 'joi';
 
 const schema = {
@@ -16,13 +17,13 @@ const schema = {
       D: Joi.number().min(0).max(100),
       F: Joi.number().min(0).max(100),
     }).optional(),
-  }).unknown(true),
+  }),
   updateCourse: Joi.object({
     name: Joi.string().optional(),
     semester: Joi.string().optional(),
     professor: Joi.string().optional(),
     notes: Joi.string().optional(),
-  }).unknown(true),
+  }),
 };
 
 export const createCourse = async (req: AuthRequest, res: Response) => {
@@ -43,18 +44,10 @@ export const createCourse = async (req: AuthRequest, res: Response) => {
     const course = result.rows[0];
 
     if (gradingScale) {
-      const scaleObj = {
-        A: { min: gradingScale.A || 90, max: 100 },
-        B: { min: gradingScale.B || 80, max: (gradingScale.A || 90) - 0.01 },
-        C: { min: gradingScale.C || 70, max: (gradingScale.B || 80) - 0.01 },
-        D: { min: gradingScale.D || 60, max: (gradingScale.C || 70) - 0.01 },
-        F: { min: 0, max: (gradingScale.D || 60) - 0.01 },
-      };
-
       try {
         await pool.query(
           'INSERT INTO grade_scales (course_id, scale) VALUES ($1, $2)',
-          [course.id, JSON.stringify(scaleObj)]
+          [course.id, JSON.stringify(buildGradeScale(gradingScale))]
         );
       } catch (scaleError) {
         console.error('Failed to create grade scale:', scaleError);

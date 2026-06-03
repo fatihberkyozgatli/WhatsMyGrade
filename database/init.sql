@@ -1,4 +1,3 @@
--- Users Table
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -8,7 +7,6 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Courses Table
 CREATE TABLE IF NOT EXISTS courses (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -20,7 +18,6 @@ CREATE TABLE IF NOT EXISTS courses (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Grade Components Table
 CREATE TABLE IF NOT EXISTS grade_components (
   id SERIAL PRIMARY KEY,
   course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
@@ -33,7 +30,6 @@ CREATE TABLE IF NOT EXISTS grade_components (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Grade Scales Table
 CREATE TABLE IF NOT EXISTS grade_scales (
   id SERIAL PRIMARY KEY,
   course_id INTEGER UNIQUE NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
@@ -42,7 +38,6 @@ CREATE TABLE IF NOT EXISTS grade_scales (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes
-CREATE INDEX idx_courses_user_id ON courses(user_id);
-CREATE INDEX idx_components_course_id ON grade_components(course_id);
-CREATE INDEX idx_scales_course_id ON grade_scales(course_id);
+CREATE INDEX IF NOT EXISTS idx_courses_user_id ON courses(user_id);
+CREATE INDEX IF NOT EXISTS idx_components_course_id ON grade_components(course_id);
+CREATE INDEX IF NOT EXISTS idx_scales_course_id ON grade_scales(course_id);

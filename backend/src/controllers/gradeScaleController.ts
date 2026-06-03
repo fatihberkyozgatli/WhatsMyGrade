@@ -1,6 +1,21 @@
 import { Response } from 'express';
 import pool from '../db';
 import { AuthRequest } from '../middleware';
+import { DEFAULT_GRADE_SCALE, parseScale } from '../constants';
+import Joi from 'joi';
+
+const rangeSchema = Joi.object({
+  min: Joi.number().min(0).max(100).required(),
+  max: Joi.number().min(Joi.ref('min')).max(100).required(),
+});
+
+const scaleSchema = Joi.object({
+  A: rangeSchema.required(),
+  B: rangeSchema.required(),
+  C: rangeSchema.required(),
+  D: rangeSchema.required(),
+  F: rangeSchema.required(),
+});
 
 export const getGradeScale = async (req: AuthRequest, res: Response) => {
   const { courseId } = req.params;
@@ -15,16 +30,10 @@ export const getGradeScale = async (req: AuthRequest, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.json({
-        A: { min: 90, max: 100 },
-        B: { min: 80, max: 89.99 },
-        C: { min: 70, max: 79.99 },
-        D: { min: 60, max: 69.99 },
-        F: { min: 0, max: 59.99 },
-      });
+      return res.json(DEFAULT_GRADE_SCALE);
     }
 
-    res.json(JSON.parse(result.rows[0].scale));
+    res.json(parseScale(result.rows[0].scale));
   } catch (error) {
     console.error('Fetch grade scale error:', error);
     res.status(500).json({ error: 'Failed to fetch grade scale' });
@@ -34,7 +43,11 @@ export const getGradeScale = async (req: AuthRequest, res: Response) => {
 export const updateGradeScale = async (req: AuthRequest, res: Response) => {
   const { courseId } = req.params;
   const userId = req.user?.userId;
-  const scale = req.body;
+
+  const { error: validationError, value: scale } = scaleSchema.validate(req.body);
+  if (validationError) {
+    return res.status(400).json({ error: validationError.details[0].message });
+  }
 
   try {
     const courseResult = await pool.query(
@@ -56,7 +69,7 @@ export const updateGradeScale = async (req: AuthRequest, res: Response) => {
         'UPDATE grade_scales SET scale = $1 WHERE course_id = $2 RETURNING *',
         [JSON.stringify(scale), courseId]
       );
-      return res.json(JSON.parse(result.rows[0].scale));
+      return res.json(parseScale(result.rows[0].scale));
     }
 
     const result = await pool.query(
@@ -64,7 +77,7 @@ export const updateGradeScale = async (req: AuthRequest, res: Response) => {
       [courseId, JSON.stringify(scale)]
     );
 
-    res.status(201).json(JSON.parse(result.rows[0].scale));
+    res.status(201).json(parseScale(result.rows[0].scale));
   } catch (error) {
     console.error('Update grade scale error:', error);
     res.status(500).json({ error: 'Failed to update grade scale' });
