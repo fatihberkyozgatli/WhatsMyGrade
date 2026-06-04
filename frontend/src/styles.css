@@ -3,13 +3,22 @@
 @import 'tailwindcss/utilities';
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI',
+    'Roboto', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #ffffff;
   color: #1f2937;
+}
+
+/* Academic, highly readable pairing: Crimson Pro headings + Atkinson body.
+   Atkinson Hyperlegible is dyslexia-friendly — well suited to a study tool. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: 'Crimson Pro', Georgia, serif;
+  }
 }
 
 .btn-primary {

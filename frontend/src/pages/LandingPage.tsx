@@ -16,22 +16,28 @@ export const LandingPage: React.FC = () => {
             Track your course grades in real time. Know your current grade, see your projected final grade, and discover exactly what scores you need on remaining work to reach your target grade.
           </p>
 
-          <div className="flex gap-3 justify-center mb-16">
+          <div className="flex flex-col items-center gap-3 mb-16">
             {isAuthenticated ? (
               <button
                 onClick={() => navigate('/dashboard')}
-                className="btn-primary"
+                className="btn-primary text-base px-8"
               >
                 Go to Dashboard
               </button>
             ) : (
               <>
-                <Link to="/login" className="btn-secondary">
-                  Login
+                <Link to="/register" className="btn-primary text-base px-8">
+                  Sign Up — it's free
                 </Link>
-                <Link to="/register" className="btn-primary">
-                  Sign Up
-                </Link>
+                <p className="text-sm text-gray-500">
+                  Already have an account?{' '}
+                  <Link
+                    to="/login"
+                    className="text-blue-600 hover:text-blue-700 font-medium rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  >
+                    Log in
+                  </Link>
+                </p>
               </>
             )}
           </div>

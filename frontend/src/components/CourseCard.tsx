@@ -1,6 +1,7 @@
 import React from 'react';
 import { Course, GradeCalculationResult } from '../types';
 import { Link } from 'react-router-dom';
+import { XIcon } from './icons';
 
 interface CourseCardProps {
   course: Course;
@@ -76,10 +77,10 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
             {onDelete && (
               <button
                 onClick={handleDelete}
-                className="pointer-events-auto text-red-700 bg-red-100 hover:bg-red-200 text-sm font-semibold px-2 py-1 rounded transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                className="pointer-events-auto text-red-700 bg-red-100 hover:bg-red-200 font-semibold p-1.5 rounded transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 aria-label={`Delete ${course.name}`}
               >
-                ✕
+                <XIcon className="w-4 h-4" />
               </button>
             )}
           </div>

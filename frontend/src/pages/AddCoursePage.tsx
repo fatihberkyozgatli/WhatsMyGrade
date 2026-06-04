@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
+import { ArrowLeftIcon } from '../components/icons';
 
 export const AddCoursePage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -69,9 +70,9 @@ export const AddCoursePage: React.FC = () => {
       <div className="content-wrapper max-w-2xl">
         <Link
           to="/dashboard"
-          className="inline-block text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          ← Back to Dashboard
+          <ArrowLeftIcon className="w-4 h-4" /> Back to Dashboard
         </Link>
 
         <div className="card">

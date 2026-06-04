@@ -5,6 +5,7 @@ import { Course, GradeComponent, GradeCalculationResult } from '../types';
 import { GradeCalculator } from '../components/GradeCalculator';
 import { FormInput } from '../components/FormInputs';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { XIcon, ArrowLeftIcon } from '../components/icons';
 
 export const CourseDetailPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -183,9 +184,9 @@ export const CourseDetailPage: React.FC = () => {
         <div className="content-wrapper max-w-2xl">
           <Link
             to="/dashboard"
-            className="inline-block text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            ← Back to Dashboard
+            <ArrowLeftIcon className="w-4 h-4" /> Back to Dashboard
           </Link>
           <div className="card text-center py-12">
             <p role="alert" className="text-red-700 mb-4">{initialLoadError || 'Course not found'}</p>
@@ -203,9 +204,9 @@ export const CourseDetailPage: React.FC = () => {
       <div className="content-wrapper max-w-4xl">
         <Link
           to="/dashboard"
-          className="inline-block text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          ← Back to Dashboard
+          <ArrowLeftIcon className="w-4 h-4" /> Back to Dashboard
         </Link>
 
         {error && (
@@ -363,9 +364,9 @@ export const CourseDetailPage: React.FC = () => {
                     <button
                       onClick={() => handleDeleteComponent(comp.id, comp.name)}
                       aria-label={`Delete ${comp.name}`}
-                      className="text-red-600 hover:text-red-700 text-xs font-medium px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      className="text-red-600 hover:text-red-700 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     >
-                      ✕
+                      <XIcon className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
