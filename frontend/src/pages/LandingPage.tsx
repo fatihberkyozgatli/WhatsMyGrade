@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import { RotatingText } from '../components/RotatingText';
 
 export const LandingPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -10,8 +11,11 @@ export const LandingPage: React.FC = () => {
     <div className="page-container">
       <div className="content-wrapper">
         <div className="max-w-3xl mx-auto text-center py-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">WhatsMyGrade</h1>
-          <p className="text-2xl font-semibold text-gray-700 mb-4">What do I need to get?</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-blue-600 mb-3">WhatsMyGrade</p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-2">What do I need to get?</h1>
+          <div className="text-2xl sm:text-3xl font-semibold text-blue-600 mb-6 h-[1.4em] overflow-hidden">
+            <RotatingText items={['an A', 'a 90%', 'a 3.7 GPA', 'that scholarship', 'to just pass']} />
+          </div>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto mb-8">
             Track your course grades in real time. Know your current grade, see your projected final grade, and discover exactly what scores you need on remaining work to reach your target grade.
           </p>
