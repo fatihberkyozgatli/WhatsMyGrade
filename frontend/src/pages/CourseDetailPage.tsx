@@ -298,9 +298,32 @@ export const CourseDetailPage: React.FC = () => {
                           min="0"
                           max="100"
                           step="0.01"
-                          value={comp.grade}
-                          onChange={(e) => handleUpdateComponent(comp.id, true, parseFloat(e.target.value))}
-                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm font-semibold text-blue-600"
+                          key={comp.grade}
+                          defaultValue={comp.grade}
+                          aria-label={`Grade for ${comp.name}`}
+                          onBlur={(e) => {
+                            const raw = e.target.value;
+                            if (raw === '') {
+                              // Clearing reverts to ungraded instead of sending NaN/null.
+                              handleUpdateComponent(comp.id, false, null);
+                              return;
+                            }
+                            const parsed = parseFloat(raw);
+                            if (Number.isNaN(parsed) || parsed < 0 || parsed > 100) {
+                              // Invalid entry: snap the field back to the last saved grade
+                              // and surface an error instead of leaving a stale value.
+                              e.target.value = String(comp.grade);
+                              setError('Grade must be between 0 and 100');
+                              return;
+                            }
+                            handleUpdateComponent(comp.id, true, parsed);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         />
                         <span className="text-xs text-gray-500">%</span>
                         

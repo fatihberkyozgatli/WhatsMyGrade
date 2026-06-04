@@ -29,15 +29,13 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   }
 };
 
+// Fixed session lifetime, so a login near midnight doesn't expire almost instantly.
+const TOKEN_TTL = '7d';
+
 export const generateToken = (userId: number, email: string) => {
   if (!config.jwt_secret) {
     throw new Error('JWT_SECRET not configured');
   }
 
-  const now = new Date();
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
-  const secondsUntilEndOfDay = Math.floor((endOfDay.getTime() - now.getTime()) / 1000);
-  
-  return jwt.sign({ userId, email }, config.jwt_secret, { expiresIn: secondsUntilEndOfDay });
+  return jwt.sign({ userId, email }, config.jwt_secret, { expiresIn: TOKEN_TTL });
 };

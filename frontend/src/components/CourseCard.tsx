@@ -40,6 +40,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (onDelete) {
       onDelete(course.id, course.name);
     }
@@ -52,8 +53,15 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
   const ungradedList = ungradedComponents.length > 0 ? ungradedComponents.join(' & ') : null;
 
   return (
-    <Link to={`/course/${course.id}`}>
-      <div className="card hover:shadow-lg">
+    <div className="card hover:shadow-lg relative">
+      {/* Stretched overlay link keeps the whole card navigable without nesting the
+          delete <button> inside an <a> (invalid HTML / keyboard-ambiguous). */}
+      <Link
+        to={`/course/${course.id}`}
+        aria-label={`View ${course.name}`}
+        className="absolute inset-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      />
+      <div className="relative pointer-events-none">
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900">{course.name}</h3>
@@ -68,8 +76,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
             {onDelete && (
               <button
                 onClick={handleDelete}
-                className="text-red-700 bg-red-100 hover:bg-red-200 text-sm font-semibold px-2 py-1 rounded transition"
-                title="Delete course"
+                className="pointer-events-auto text-red-700 bg-red-100 hover:bg-red-200 text-sm font-semibold px-2 py-1 rounded transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                aria-label={`Delete ${course.name}`}
               >
                 ✕
               </button>
@@ -111,6 +119,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
           </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 };

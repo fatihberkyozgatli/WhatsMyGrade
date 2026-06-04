@@ -23,7 +23,7 @@ const schema = {
     semester: Joi.string().optional(),
     professor: Joi.string().optional(),
     notes: Joi.string().optional(),
-  }),
+  }).min(1),
 };
 
 export const createCourse = async (req: AuthRequest, res: Response) => {

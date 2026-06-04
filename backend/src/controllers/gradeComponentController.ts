@@ -18,7 +18,7 @@ const schema = {
     graded: Joi.boolean().optional(),
     grade: Joi.number().min(0).max(100).allow(null).optional(),
     category: Joi.string().optional(),
-  }),
+  }).min(1),
 };
 
 export const createComponent = async (req: AuthRequest, res: Response) => {

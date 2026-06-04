@@ -43,6 +43,7 @@ function AppContent() {
           path="/course/:courseId"
           element={isAuthenticated ? <CourseDetailPage /> : <Navigate to="/login" />}
         />
+        <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/'} replace />} />
       </Routes>
     </Router>
   );

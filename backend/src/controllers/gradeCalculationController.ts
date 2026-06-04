@@ -27,7 +27,9 @@ const computeResult = (components: any[], scale: GradeScale) => {
 
   let projectedFinalGrade = null;
   if (totalRemainingWeight > 0 && currentGrade !== null) {
-    projectedFinalGrade = (currentGrade * percentageGraded + 100 * totalRemainingWeight) / 100;
+    // Normalize by totalWeight (not 100) so the projection stays meaningful when
+    // component weights don't sum to 100. Reduces to the old formula when they do.
+    projectedFinalGrade = (currentGrade * percentageGraded + 100 * totalRemainingWeight) / totalWeight;
   } else if (percentageRemaining === 0 && totalWeight > 0) {
     projectedFinalGrade = currentGrade;
   }
@@ -47,7 +49,7 @@ const computeResult = (components: any[], scale: GradeScale) => {
       }
     } else {
       const requiredAverage =
-        (targetGrade * 100 - currentGrade! * percentageGraded) / totalRemainingWeight;
+        (targetGrade * totalWeight - currentGrade! * percentageGraded) / totalRemainingWeight;
 
       if (requiredAverage > 100) {
         requiredByLetterGrade[letter] = 'No longer possible';
@@ -152,13 +154,24 @@ export const calculateAllGrades = async (req: AuthRequest, res: Response) => {
 
     const scaleByCourse = new Map<number, GradeScale>();
     scalesResult.rows.forEach((row) => {
-      scaleByCourse.set(row.course_id, parseScale(row.scale));
+      try {
+        scaleByCourse.set(row.course_id, parseScale(row.scale));
+      } catch (parseError) {
+        // A single malformed scale row shouldn't break the whole dashboard;
+        // fall back to the default scale for this course.
+        console.error(`Failed to parse grade scale for course ${row.course_id}, using default:`, parseError);
+      }
     });
 
     const results: { [key: number]: ReturnType<typeof computeResult> } = {};
     courseIds.forEach((id) => {
-      const scale = scaleByCourse.get(id) || DEFAULT_GRADE_SCALE;
-      results[id] = computeResult(componentsByCourse.get(id) || [], scale);
+      try {
+        const scale = scaleByCourse.get(id) || DEFAULT_GRADE_SCALE;
+        results[id] = computeResult(componentsByCourse.get(id) || [], scale);
+      } catch (courseError) {
+        // Isolate per-course failures so one bad course doesn't 500 the batch.
+        console.error(`Failed to compute grades for course ${id}, skipping:`, courseError);
+      }
     });
 
     res.json(results);

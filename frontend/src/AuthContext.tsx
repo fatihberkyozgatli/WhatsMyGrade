@@ -24,42 +24,47 @@ const isTokenExpired = (token: string): boolean => {
   }
 };
 
+// Read a non-expired token from storage, clearing it if expired. Called both for
+// the synchronous initial state and on focus/storage events.
+const readValidToken = (): string | null => {
+  const savedToken = localStorage.getItem('token');
+  if (!savedToken) return null;
+  if (isTokenExpired(savedToken)) {
+    localStorage.removeItem('token');
+    return null;
+  }
+  return savedToken;
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Initialize synchronously from storage so the first render of a protected
+  // route already knows the user is authenticated (avoids a redirect bounce /
+  // lost deep link on refresh).
+  const [token, setToken] = useState<string | null>(readValidToken);
 
   useEffect(() => {
-    const checkToken = () => {
-      const savedToken = localStorage.getItem('token');
-      if (savedToken) {
-        if (isTokenExpired(savedToken)) {
-          setToken(null);
-          setIsAuthenticated(false);
-          localStorage.removeItem('token');
-        } else {
-          setToken(savedToken);
-          setIsAuthenticated(true);
-        }
-      }
-    };
+    const checkToken = () => setToken(readValidToken());
 
-    checkToken();
-
+    // Re-check when the tab regains focus, and keep auth state in sync across tabs.
     window.addEventListener('focus', checkToken);
-    return () => window.removeEventListener('focus', checkToken);
+    window.addEventListener('storage', checkToken);
+    return () => {
+      window.removeEventListener('focus', checkToken);
+      window.removeEventListener('storage', checkToken);
+    };
   }, []);
 
   const login = (newToken: string) => {
-    setToken(newToken);
-    setIsAuthenticated(true);
     localStorage.setItem('token', newToken);
+    setToken(newToken);
   };
 
   const logout = () => {
-    setToken(null);
-    setIsAuthenticated(false);
     localStorage.removeItem('token');
+    setToken(null);
   };
+
+  const isAuthenticated = token !== null;
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
