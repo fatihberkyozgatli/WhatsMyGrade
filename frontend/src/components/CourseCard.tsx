@@ -59,7 +59,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
       <Link
         to={`/course/${course.id}`}
         aria-label={`View ${course.name}`}
-        className="absolute inset-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="absolute inset-0 rounded-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       />
       <div className="relative pointer-events-none">
         <div className="flex justify-between items-start mb-3">
@@ -96,10 +96,10 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm">
                   <span className="text-gray-600">Graded:</span>
-                  <span className="font-semibold text-gray-900">{gradeData.percentageGraded.toFixed(0)}</span>
+                  <span className="font-semibold text-gray-900 tabular-nums">{gradeData.percentageGraded.toFixed(0)}%</span>
                   <span className="text-gray-400">|</span>
                   <span className="text-gray-600">Ungraded:</span>
-                  <span className="font-semibold text-gray-900">{gradeData.percentageRemaining.toFixed(0)}</span>
+                  <span className="font-semibold text-gray-900 tabular-nums">{gradeData.percentageRemaining.toFixed(0)}%</span>
                 </div>
 
                 {achievableGrade ? (

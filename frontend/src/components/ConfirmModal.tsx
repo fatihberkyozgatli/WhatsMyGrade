@@ -39,6 +39,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     // Focus the non-destructive action by default for safety.
     cancelButtonRef.current?.focus();
 
+    // Lock background scroll while the dialog is open.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onCancelRef.current();
@@ -62,6 +66,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
       previouslyFocused.current?.focus();
     };
   }, [isOpen]);

@@ -38,18 +38,19 @@ export const LoginPage: React.FC = () => {
         <p className="text-gray-500 text-sm mb-6">Sign in to your account</p>
 
         {error && (
-          <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <FormInput
             label="Email"
             type="email"
             value={formData.email}
             onChange={(value) => setFormData({ ...formData, email: String(value) })}
             required
+            autoComplete="email"
             placeholder="you@example.com"
           />
 
@@ -59,6 +60,7 @@ export const LoginPage: React.FC = () => {
             value={formData.password}
             onChange={(value) => setFormData({ ...formData, password: String(value) })}
             required
+            autoComplete="current-password"
             placeholder="Enter your password"
           />
 

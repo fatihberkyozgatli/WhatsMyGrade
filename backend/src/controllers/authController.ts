@@ -6,9 +6,9 @@ import Joi from 'joi';
 
 const schema = {
   register: Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
-    name: Joi.string().required(),
+    email: Joi.string().email().max(255).required(),
+    password: Joi.string().min(6).max(128).required(),
+    name: Joi.string().max(255).required(),
   }),
   login: Joi.object({
     email: Joi.string().email().required(),
@@ -40,7 +40,12 @@ export const register = async (req: AuthRequest, res: Response) => {
     const token = generateToken(user.id, user.email);
 
     res.status(201).json({ user, token });
-  } catch (error) {
+  } catch (error: any) {
+    // Unique-violation: a concurrent request registered the same email between
+    // our existence check and this insert. Return a clean 400 instead of 500.
+    if (error?.code === '23505') {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
   }

@@ -47,26 +47,26 @@ export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result }) => {
   return (
     <div className="card">
       {result.weightWarning && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
           {result.weightWarning}
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">Current Grade</p>
-          <p className="text-4xl font-semibold text-blue-600">
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-xs text-blue-700 font-medium uppercase tracking-wide mb-2">Current Grade</p>
+          <p className="text-4xl font-bold text-blue-600 tabular-nums">
             {result.currentGrade !== null ? `${result.currentGrade.toFixed(2)}%` : 'N/A'}
           </p>
-          <p className="text-xs text-gray-400 mt-2">{result.percentageGraded.toFixed(1)}% Graded</p>
+          <p className="text-xs text-gray-500 mt-2 tabular-nums">{result.percentageGraded.toFixed(1)}% Graded</p>
         </div>
 
         <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
           <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">Maximum Obtainable</p>
-          <p className="text-4xl font-semibold text-blue-600">
+          <p className="text-3xl font-semibold text-gray-700 tabular-nums">
             {result.projectedFinalGrade !== null ? `${result.projectedFinalGrade.toFixed(2)}%` : 'N/A'}
           </p>
-          <p className="text-xs text-gray-400 mt-2">{result.percentageRemaining.toFixed(1)}% Remaining</p>
+          <p className="text-xs text-gray-400 mt-2 tabular-nums">{result.percentageRemaining.toFixed(1)}% Remaining</p>
         </div>
       </div>
 
@@ -80,9 +80,9 @@ export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result }) => {
           {Object.entries(result.requiredByLetterGrade).map(([grade, requirement]) => (
             <div key={grade} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
               <span className="font-semibold text-gray-900">{grade}</span>
-              <span className={`text-sm font-medium ${
-                requirement === 'Already secured' ? 'text-green-700' : 
-                requirement === 'No longer possible' ? 'text-red-700' : 
+              <span className={`text-sm font-medium tabular-nums ${
+                requirement === 'Already secured' ? 'text-green-700' :
+                requirement === 'No longer possible' ? 'text-red-700' :
                 'text-gray-600'
               }`}>
                 {requirement}

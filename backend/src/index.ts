@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import authRoutes from './routes/auth';
 import courseRoutes from './routes/courses';
@@ -9,15 +10,27 @@ import calculateRoutes from './routes/calculate';
 
 const app = express();
 
-// Accept a comma-separated CORS allowlist so multiple environments work.
+// Accept a comma-separated CORS allowlist so multiple environments work;
+// a single '*' entry means allow any origin.
 const allowedOrigins = config.cors_origin
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
+const corsOrigin = allowedOrigins.includes('*') ? true : allowedOrigins;
+
+// Coarse global limiter for the whole API (auth routes keep a stricter one).
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+});
 
 app.set('trust proxy', config.trust_proxy);
-app.use(cors({ origin: allowedOrigins }));
-app.use(express.json());
+app.use(cors({ origin: corsOrigin }));
+app.use(express.json({ limit: '16kb' }));
+app.use('/api', apiLimiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);

@@ -51,17 +51,18 @@ export const RegisterPage: React.FC = () => {
         <p className="text-gray-500 text-sm mb-6">Join WhatsMyGrade to track your grades</p>
 
         {error && (
-          <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <FormInput
             label="Full Name"
             value={formData.name}
             onChange={(value) => setFormData({ ...formData, name: String(value) })}
             required
+            autoComplete="name"
             placeholder="John Doe"
           />
 
@@ -71,6 +72,7 @@ export const RegisterPage: React.FC = () => {
             value={formData.email}
             onChange={(value) => setFormData({ ...formData, email: String(value) })}
             required
+            autoComplete="email"
             placeholder="you@example.com"
           />
 
@@ -80,6 +82,7 @@ export const RegisterPage: React.FC = () => {
             value={formData.password}
             onChange={(value) => setFormData({ ...formData, password: String(value) })}
             required
+            autoComplete="new-password"
             placeholder="Enter your password"
           />
 
@@ -89,6 +92,7 @@ export const RegisterPage: React.FC = () => {
             value={formData.confirmPassword}
             onChange={(value) => setFormData({ ...formData, confirmPassword: String(value) })}
             required
+            autoComplete="new-password"
             placeholder="Confirm password"
           />
 

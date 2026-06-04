@@ -21,8 +21,14 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   }
 
   try {
-    const decoded = jwt.verify(token, config.jwt_secret) as unknown as { userId: number; email: string };
-    req.user = decoded;
+    const decoded = jwt.verify(token, config.jwt_secret) as unknown as {
+      userId?: unknown;
+      email?: unknown;
+    };
+    if (typeof decoded.userId !== 'number' || typeof decoded.email !== 'string') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    req.user = { userId: decoded.userId, email: decoded.email };
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });

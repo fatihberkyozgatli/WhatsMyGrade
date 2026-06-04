@@ -14,10 +14,20 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
+// Express's "trust proxy" accepts a boolean, a hop count (number), or a string
+// (e.g. 'loopback'). Parse robustly so TRUST_PROXY=true doesn't become NaN.
+const parseTrustProxy = (value: string | undefined): boolean | number | string => {
+  if (!value) return false;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  const hops = Number(value);
+  return Number.isNaN(hops) ? value : hops;
+};
+
 export const config = {
   port: parseInt(process.env.PORT || '5001', 10),
   database_url: process.env.DATABASE_URL as string,
   jwt_secret: process.env.JWT_SECRET as string,
   cors_origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  trust_proxy: process.env.TRUST_PROXY ? Number(process.env.TRUST_PROXY) : false,
+  trust_proxy: parseTrustProxy(process.env.TRUST_PROXY),
 };

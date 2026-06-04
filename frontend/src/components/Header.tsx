@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 interface HeaderProps {
@@ -14,9 +14,29 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Dismiss the mobile menu on Escape or a click outside the header.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    const handleClick = (e: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    document.addEventListener('mousedown', handleClick);
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, [menuOpen]);
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header ref={headerRef} className="bg-white border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link
           to="/"

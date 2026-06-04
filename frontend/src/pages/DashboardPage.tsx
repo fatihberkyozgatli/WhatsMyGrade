@@ -15,22 +15,29 @@ export const DashboardPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let cancelled = false;
     const fetchData = async () => {
       try {
-        const coursesResponse = await api.get('/courses');
+        const [coursesResponse, calcResponse] = await Promise.all([
+          api.get('/courses'),
+          api.get('/calculate'),
+        ]);
+        if (cancelled) return;
         setCourses(coursesResponse.data);
-
-        const calcResponse = await api.get('/calculate');
         setGradeData(calcResponse.data);
       } catch (err: any) {
+        if (cancelled) return;
         setError('Failed to load courses');
         console.error(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchData();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleDeleteCourse = (courseId: number, courseName: string) => {
@@ -42,7 +49,7 @@ export const DashboardPage: React.FC = () => {
 
     try {
       await api.delete(`/courses/${deleteModal.courseId}`);
-      setCourses(courses.filter(c => c.id !== deleteModal.courseId));
+      setCourses(prev => prev.filter(c => c.id !== deleteModal.courseId));
       setDeleteModal({ isOpen: false });
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to delete course');
@@ -53,8 +60,8 @@ export const DashboardPage: React.FC = () => {
   if (loading) {
     return (
       <div className="page-container flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+        <div className="text-center" role="status">
+          <div className="animate-spin motion-reduce:animate-none rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
           <p className="text-gray-500">Loading courses...</p>
         </div>
       </div>
@@ -75,7 +82,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}

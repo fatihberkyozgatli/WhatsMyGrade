@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
 
@@ -8,7 +8,14 @@ export const AddCoursePage: React.FC = () => {
     name: '',
     semester: '',
   });
-  const [gradingScale, setGradingScale] = useState({
+  // Threshold fields allow '' so a cleared input isn't silently coerced to 0.
+  const [gradingScale, setGradingScale] = useState<{
+    A: number | '';
+    B: number | '';
+    C: number | '';
+    D: number | '';
+    F: number;
+  }>({
     A: 90,
     B: 80,
     C: 70,
@@ -32,9 +39,13 @@ export const AddCoursePage: React.FC = () => {
       return;
     }
 
-    if (gradingScale.A <= gradingScale.B || gradingScale.B <= gradingScale.C ||
-        gradingScale.C <= gradingScale.D || gradingScale.D < 0) {
-      setError('Grading scale must be in descending order: A > B > C > D ≥ 0');
+    const { A, B, C, D } = gradingScale;
+    if (A === '' || B === '' || C === '' || D === '') {
+      setError('All grading scale thresholds are required');
+      return;
+    }
+    if (A > 100 || A <= B || B <= C || C <= D || D < 0) {
+      setError('Grading scale must descend within 0–100: 100 ≥ A > B > C > D ≥ 0');
       return;
     }
 
@@ -56,24 +67,24 @@ export const AddCoursePage: React.FC = () => {
   return (
     <div className="page-container">
       <div className="content-wrapper max-w-2xl">
-        <button 
-          onClick={() => navigate('/dashboard')}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-6"
+        <Link
+          to="/dashboard"
+          className="inline-block text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           ← Back to Dashboard
-        </button>
+        </Link>
 
         <div className="card">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Add Course</h1>
           <p className="text-gray-500 text-sm mb-6">Create a new course to track</p>
 
           {error && (
-            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <FormInput
               label="Course Name"
               value={formData.name}
@@ -99,25 +110,25 @@ export const AddCoursePage: React.FC = () => {
                   label="A (minimum %)"
                   type="number"
                   value={gradingScale.A}
-                  onChange={(value) => setGradingScale({ ...gradingScale, A: Number(value) })}
+                  onChange={(value) => setGradingScale({ ...gradingScale, A: value as number | '' })}
                 />
                 <FormInput
                   label="B (minimum %)"
                   type="number"
                   value={gradingScale.B}
-                  onChange={(value) => setGradingScale({ ...gradingScale, B: Number(value) })}
+                  onChange={(value) => setGradingScale({ ...gradingScale, B: value as number | '' })}
                 />
                 <FormInput
                   label="C (minimum %)"
                   type="number"
                   value={gradingScale.C}
-                  onChange={(value) => setGradingScale({ ...gradingScale, C: Number(value) })}
+                  onChange={(value) => setGradingScale({ ...gradingScale, C: value as number | '' })}
                 />
                 <FormInput
                   label="D (minimum %)"
                   type="number"
                   value={gradingScale.D}
-                  onChange={(value) => setGradingScale({ ...gradingScale, D: Number(value) })}
+                  onChange={(value) => setGradingScale({ ...gradingScale, D: value as number | '' })}
                 />
               </div>
             </div>

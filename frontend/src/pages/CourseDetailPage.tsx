@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { Course, GradeComponent, GradeCalculationResult } from '../types';
 import { GradeCalculator } from '../components/GradeCalculator';
@@ -27,37 +27,43 @@ export const CourseDetailPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let cancelled = false;
     const fetchData = async () => {
       try {
         if (!courseId) return;
 
         const courseRes = await api.get(`/courses/${courseId}`);
+        if (cancelled) return;
         setCourse(courseRes.data);
         setInitialLoadError('');
 
         try {
           const componentsRes = await api.get(`/components/${courseId}`);
-          setComponents(componentsRes.data);
+          if (!cancelled) setComponents(componentsRes.data);
         } catch (err) {
           console.error('Failed to load components:', err);
-          setComponents([]);
+          if (!cancelled) setComponents([]);
         }
 
         try {
           const calcRes = await api.get(`/calculate/${courseId}`);
-          setCalculation(calcRes.data);
+          if (!cancelled) setCalculation(calcRes.data);
         } catch (err) {
           console.error('Failed to load calculations:', err);
         }
       } catch (err: any) {
+        if (cancelled) return;
         setInitialLoadError(err.response?.data?.error || 'Failed to load course');
         console.error('Course fetch error:', err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchData();
+    return () => {
+      cancelled = true;
+    };
   }, [courseId]);
 
   const handleAddComponent = async (e: React.FormEvent) => {
@@ -163,8 +169,8 @@ export const CourseDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className="page-container flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+        <div className="text-center" role="status">
+          <div className="animate-spin motion-reduce:animate-none rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
           <p className="text-gray-500">Loading course details...</p>
         </div>
       </div>
@@ -175,20 +181,17 @@ export const CourseDetailPage: React.FC = () => {
     return (
       <div className="page-container">
         <div className="content-wrapper max-w-2xl">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-6"
+          <Link
+            to="/dashboard"
+            className="inline-block text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             ← Back to Dashboard
-          </button>
+          </Link>
           <div className="card text-center py-12">
-            <p className="text-red-700 mb-4">{initialLoadError || 'Course not found'}</p>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="btn-primary text-sm"
-            >
+            <p role="alert" className="text-red-700 mb-4">{initialLoadError || 'Course not found'}</p>
+            <Link to="/dashboard" className="btn-primary text-sm inline-block">
               Return to Dashboard
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -198,15 +201,15 @@ export const CourseDetailPage: React.FC = () => {
   return (
     <div className="page-container">
       <div className="content-wrapper max-w-4xl">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-6"
+        <Link
+          to="/dashboard"
+          className="inline-block text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           ← Back to Dashboard
-        </button>
+        </Link>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}
@@ -244,7 +247,7 @@ export const CourseDetailPage: React.FC = () => {
           </div>
 
           {showAddComponent && (
-            <form onSubmit={handleAddComponent} className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <form onSubmit={handleAddComponent} noValidate className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
               <FormInput
                 label="Component Name"
                 value={newComponent.name}
@@ -359,7 +362,8 @@ export const CourseDetailPage: React.FC = () => {
 
                     <button
                       onClick={() => handleDeleteComponent(comp.id, comp.name)}
-                      className="text-red-600 hover:text-red-700 text-xs font-medium px-2 py-1"
+                      aria-label={`Delete ${comp.name}`}
+                      className="text-red-600 hover:text-red-700 text-xs font-medium px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     >
                       ✕
                     </button>

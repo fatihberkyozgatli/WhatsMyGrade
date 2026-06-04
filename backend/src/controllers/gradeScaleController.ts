@@ -15,7 +15,20 @@ const scaleSchema = Joi.object({
   C: rangeSchema.required(),
   D: rangeSchema.required(),
   F: rangeSchema.required(),
-});
+})
+  .custom((value, helpers) => {
+    // Letters must be coherent: A.min > B.min > C.min > D.min > F.min.
+    const order = ['A', 'B', 'C', 'D', 'F'] as const;
+    for (let i = 0; i < order.length - 1; i++) {
+      if (value[order[i]].min <= value[order[i + 1]].min) {
+        return helpers.error('any.invalid');
+      }
+    }
+    return value;
+  })
+  .messages({
+    'any.invalid': 'Grade scale thresholds must descend: A.min > B.min > C.min > D.min > F.min',
+  });
 
 export const getGradeScale = async (req: AuthRequest, res: Response) => {
   const { courseId } = req.params;
@@ -33,7 +46,13 @@ export const getGradeScale = async (req: AuthRequest, res: Response) => {
       return res.json(DEFAULT_GRADE_SCALE);
     }
 
-    res.json(parseScale(result.rows[0].scale));
+    let scale = DEFAULT_GRADE_SCALE;
+    try {
+      scale = parseScale(result.rows[0].scale);
+    } catch (parseError) {
+      console.error(`Failed to parse grade scale for course ${courseId}, using default:`, parseError);
+    }
+    res.json(scale);
   } catch (error) {
     console.error('Fetch grade scale error:', error);
     res.status(500).json({ error: 'Failed to fetch grade scale' });

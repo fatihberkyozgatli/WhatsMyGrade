@@ -6,18 +6,25 @@ import Joi from 'joi';
 const schema = {
   createComponent: Joi.object({
     courseId: Joi.number().required(),
-    name: Joi.string().required(),
-    weight: Joi.number().min(0).max(100).required(),
+    name: Joi.string().max(255).required(),
+    weight: Joi.number().greater(0).max(100).required(),
     graded: Joi.boolean().default(false),
-    grade: Joi.number().min(0).max(100).allow(null).optional(),
-    category: Joi.string().optional(),
+    // When graded is true, grade must be a real number (not null/absent).
+    grade: Joi.number().min(0).max(100).allow(null).when('graded', {
+      is: true,
+      then: Joi.required().invalid(null),
+    }),
+    category: Joi.string().max(100).optional(),
   }),
   updateComponent: Joi.object({
-    name: Joi.string().optional(),
-    weight: Joi.number().min(0).max(100).optional(),
+    name: Joi.string().max(255).optional(),
+    weight: Joi.number().greater(0).max(100).optional(),
     graded: Joi.boolean().optional(),
-    grade: Joi.number().min(0).max(100).allow(null).optional(),
-    category: Joi.string().optional(),
+    grade: Joi.number().min(0).max(100).allow(null).when('graded', {
+      is: true,
+      then: Joi.required().invalid(null),
+    }),
+    category: Joi.string().max(100).optional(),
   }).min(1),
 };
 

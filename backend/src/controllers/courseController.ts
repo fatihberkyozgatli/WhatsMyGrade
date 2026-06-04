@@ -6,23 +6,24 @@ import Joi from 'joi';
 
 const schema = {
   createCourse: Joi.object({
-    name: Joi.string().required(),
-    semester: Joi.string().required(),
-    professor: Joi.string().optional(),
-    notes: Joi.string().optional(),
+    name: Joi.string().max(255).required(),
+    semester: Joi.string().max(100).required(),
+    professor: Joi.string().max(255).optional(),
+    notes: Joi.string().max(10000).optional(),
+    // Thresholds must be coherent: 0 <= D < C < B < A <= 100.
     gradingScale: Joi.object({
-      A: Joi.number().min(0).max(100),
-      B: Joi.number().min(0).max(100),
-      C: Joi.number().min(0).max(100),
-      D: Joi.number().min(0).max(100),
-      F: Joi.number().min(0).max(100),
+      A: Joi.number().min(0).max(100).required(),
+      B: Joi.number().min(0).less(Joi.ref('A')).required(),
+      C: Joi.number().min(0).less(Joi.ref('B')).required(),
+      D: Joi.number().min(0).less(Joi.ref('C')).required(),
+      F: Joi.number().min(0).max(100).optional(),
     }).optional(),
   }),
   updateCourse: Joi.object({
-    name: Joi.string().optional(),
-    semester: Joi.string().optional(),
-    professor: Joi.string().optional(),
-    notes: Joi.string().optional(),
+    name: Joi.string().max(255).optional(),
+    semester: Joi.string().max(100).optional(),
+    professor: Joi.string().max(255).optional(),
+    notes: Joi.string().max(10000).optional(),
   }).min(1),
 };
 
@@ -35,29 +36,33 @@ export const createCourse = async (req: AuthRequest, res: Response) => {
   const { name, semester, professor, notes, gradingScale } = value;
   const userId = req.user?.userId;
 
+  // Course + custom scale must be atomic: don't return 201 with a silently
+  // missing scale. Roll both back if either insert fails.
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
+    await client.query('BEGIN');
+
+    const result = await client.query(
       'INSERT INTO courses (user_id, name, semester, professor, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
       [userId, name, semester, professor || null, notes || null]
     );
-
     const course = result.rows[0];
 
     if (gradingScale) {
-      try {
-        await pool.query(
-          'INSERT INTO grade_scales (course_id, scale) VALUES ($1, $2)',
-          [course.id, JSON.stringify(buildGradeScale(gradingScale))]
-        );
-      } catch (scaleError) {
-        console.error('Failed to create grade scale:', scaleError);
-      }
+      await client.query(
+        'INSERT INTO grade_scales (course_id, scale) VALUES ($1, $2)',
+        [course.id, JSON.stringify(buildGradeScale(gradingScale))]
+      );
     }
 
+    await client.query('COMMIT');
     res.status(201).json(course);
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Course creation error:', error);
     res.status(500).json({ error: 'Failed to create course' });
+  } finally {
+    client.release();
   }
 };
 

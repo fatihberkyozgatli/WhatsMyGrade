@@ -48,8 +48,11 @@ const computeResult = (components: any[], scale: GradeScale) => {
         requiredByLetterGrade[letter] = 'No longer possible';
       }
     } else {
+      // currentGrade can be null when nothing is graded yet (percentageGraded is
+      // then 0, so this term is 0); use ?? 0 instead of a null-coercion assertion.
+      const gradedAvg = currentGrade ?? 0;
       const requiredAverage =
-        (targetGrade * totalWeight - currentGrade! * percentageGraded) / totalRemainingWeight;
+        (targetGrade * totalWeight - gradedAvg * percentageGraded) / totalRemainingWeight;
 
       if (requiredAverage > 100) {
         requiredByLetterGrade[letter] = 'No longer possible';
@@ -116,7 +119,15 @@ export const calculateGrades = async (req: AuthRequest, res: Response) => {
       [courseId]
     );
 
-    const scale = scaleResult.rows.length > 0 ? parseScale(scaleResult.rows[0].scale) : DEFAULT_GRADE_SCALE;
+    let scale: GradeScale = DEFAULT_GRADE_SCALE;
+    if (scaleResult.rows.length > 0) {
+      try {
+        scale = parseScale(scaleResult.rows[0].scale);
+      } catch (parseError) {
+        // A malformed scale row shouldn't 500 the course page; fall back to default.
+        console.error(`Failed to parse grade scale for course ${courseId}, using default:`, parseError);
+      }
+    }
 
     res.json(computeResult(componentsResult.rows, scale));
   } catch (error) {
