@@ -1,19 +1,5 @@
-import React, { useEffect, useState } from 'react';
-
-// Lightweight rotating text (no framer-motion): CSS fade/slide between words.
-// Respects prefers-reduced-motion (stays static) and announces the full phrase
-// to screen readers once instead of spamming on every rotation.
-const usePrefersReducedMotion = (): boolean => {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-  return reduced;
-};
+import React, { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 interface RotatingTextProps {
   items: string[];
@@ -21,39 +7,57 @@ interface RotatingTextProps {
   className?: string;
 }
 
-export const RotatingText: React.FC<RotatingTextProps> = ({ items, interval = 2200, className }) => {
-  const reduced = usePrefersReducedMotion();
+const splitChars = (text: string): string[] => Array.from(text);
+
+// Rotating tagline answer. framer-motion character stagger (spring) on each
+// word swap. Respects prefers-reduced-motion (renders a static word, no
+// rotation) and exposes the full option list once to screen readers.
+export const RotatingText: React.FC<RotatingTextProps> = ({ items, interval = 2400, className }) => {
+  const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    if (reduced || items.length <= 1) return;
-    let swapTimer: number;
-    const id = window.setInterval(() => {
-      setVisible(false); // fade out
-      swapTimer = window.setTimeout(() => {
-        setIndex((i) => (i + 1) % items.length);
-        setVisible(true); // fade in next
-      }, 250);
-    }, interval);
-    return () => {
-      clearInterval(id);
-      clearTimeout(swapTimer);
-    };
-  }, [reduced, items.length, interval]);
+    if (reduce || items.length <= 1) return;
+    const id = window.setInterval(() => setIndex((i) => (i + 1) % items.length), interval);
+    return () => clearInterval(id);
+  }, [reduce, items.length, interval]);
+
+  const chars = useMemo(() => splitChars(items[index] ?? ''), [items, index]);
+  const total = chars.length;
+
+  if (reduce) {
+    return (
+      <span className={className}>
+        <span aria-hidden="true">{items[index]}</span>
+        <span className="sr-only">{items.join(', ')}</span>
+      </span>
+    );
+  }
 
   return (
-    <span className={className}>
-      <span
-        aria-hidden="true"
-        className={`inline-block transition-all duration-200 ease-out ${
-          visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
-        }`}
-      >
-        {items[index]}
-      </span>
-      {/* Read the options once, not on every rotation. */}
+    <span className={`inline-flex ${className ?? ''}`}>
       <span className="sr-only">{items.join(', ')}</span>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span key={index} aria-hidden="true" className="inline-flex whitespace-pre">
+          {chars.map((ch, i) => (
+            <motion.span
+              key={i}
+              className="inline-block"
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '-110%', opacity: 0 }}
+              transition={{
+                type: 'spring',
+                damping: 18,
+                stiffness: 250,
+                delay: (total - 1 - i) * 0.02, // stagger from the last character
+              }}
+            >
+              {ch === ' ' ? ' ' : ch}
+            </motion.span>
+          ))}
+        </motion.span>
+      </AnimatePresence>
     </span>
   );
 };

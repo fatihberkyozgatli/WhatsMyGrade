@@ -70,17 +70,17 @@ export const AddCoursePage: React.FC = () => {
       <div className="content-wrapper max-w-2xl">
         <Link
           to="/dashboard"
-          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           <ArrowLeftIcon className="w-4 h-4" /> Back to Dashboard
         </Link>
 
         <div className="card">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Add Course</h1>
-          <p className="text-gray-500 text-sm mb-6">Create a new course to track</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-1">Add Course</h1>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Create a new course to track</p>
 
           {error && (
-            <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm dark:bg-red-950 dark:border-red-900 dark:text-red-300">
               {error}
             </div>
           )}
@@ -102,9 +102,9 @@ export const AddCoursePage: React.FC = () => {
               placeholder="e.g., Spring 2025"
             />
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h2 className="text-base font-semibold text-gray-900 mb-4">Grading Scale</h2>
-              <p className="text-xs text-gray-500 mb-4">Set the percentage thresholds for each letter grade</p>
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">Grading Scale</h2>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">Set the percentage thresholds for each letter grade</p>
 
               <div className="grid grid-cols-2 gap-4">
                 <FormInput

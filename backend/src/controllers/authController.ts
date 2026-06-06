@@ -41,8 +41,6 @@ export const register = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({ user, token });
   } catch (error: any) {
-    // Unique-violation: a concurrent request registered the same email between
-    // our existence check and this insert. Return a clean 400 instead of 500.
     if (error?.code === '23505') {
       return res.status(400).json({ error: 'Email already registered' });
     }

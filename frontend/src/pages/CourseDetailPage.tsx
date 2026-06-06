@@ -172,7 +172,7 @@ export const CourseDetailPage: React.FC = () => {
       <div className="page-container flex items-center justify-center">
         <div className="text-center" role="status">
           <div className="animate-spin motion-reduce:animate-none rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
-          <p className="text-gray-500">Loading course details...</p>
+          <p className="text-gray-500 dark:text-slate-400">Loading course details...</p>
         </div>
       </div>
     );
@@ -184,12 +184,12 @@ export const CourseDetailPage: React.FC = () => {
         <div className="content-wrapper max-w-2xl">
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <ArrowLeftIcon className="w-4 h-4" /> Back to Dashboard
           </Link>
           <div className="card text-center py-12">
-            <p role="alert" className="text-red-700 mb-4">{initialLoadError || 'Course not found'}</p>
+            <p role="alert" className="text-red-700 dark:text-red-400 mb-4">{initialLoadError || 'Course not found'}</p>
             <Link to="/dashboard" className="btn-primary text-sm inline-block">
               Return to Dashboard
             </Link>
@@ -204,13 +204,13 @@ export const CourseDetailPage: React.FC = () => {
       <div className="content-wrapper max-w-4xl">
         <Link
           to="/dashboard"
-          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           <ArrowLeftIcon className="w-4 h-4" /> Back to Dashboard
         </Link>
 
         {error && (
-          <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm dark:bg-red-950 dark:border-red-900 dark:text-red-300">
             {error}
           </div>
         )}
@@ -218,8 +218,8 @@ export const CourseDetailPage: React.FC = () => {
         {course && (
           <div className="mb-8 flex justify-between items-start">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">{course.name}</h1>
-              {course.semester && <p className="text-sm text-gray-500 mt-2">{course.semester}</p>}
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">{course.name}</h1>
+              {course.semester && <p className="text-sm text-gray-500 mt-2 dark:text-slate-400">{course.semester}</p>}
             </div>
             <button
               onClick={handleDeleteCourse}
@@ -238,7 +238,7 @@ export const CourseDetailPage: React.FC = () => {
 
         <div className="card">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Grade Components</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Grade Components</h2>
             <button
               onClick={() => setShowAddComponent(!showAddComponent)}
               className={showAddComponent ? 'btn-secondary text-sm' : 'btn-primary text-sm'}
@@ -248,7 +248,7 @@ export const CourseDetailPage: React.FC = () => {
           </div>
 
           {showAddComponent && (
-            <form onSubmit={handleAddComponent} noValidate className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <form onSubmit={handleAddComponent} noValidate className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg dark:bg-slate-700/40 dark:border-slate-700">
               <FormInput
                 label="Component Name"
                 value={newComponent.name}
@@ -284,14 +284,14 @@ export const CourseDetailPage: React.FC = () => {
           )}
 
           {components.length === 0 ? (
-            <p className="text-center py-8 text-gray-500">No components added yet. Add one to start tracking.</p>
+            <p className="text-center py-8 text-gray-500 dark:text-slate-400">No components added yet. Add one to start tracking.</p>
           ) : (
             <div className="space-y-2">
               {components.map((comp) => (
-                <div key={comp.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                <div key={comp.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition dark:border-slate-700 dark:hover:bg-slate-700/40">
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900">{comp.name}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">Weight: {comp.weight}%</div>
+                    <div className="font-medium text-gray-900 dark:text-slate-100">{comp.name}</div>
+                    <div className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">Weight: {comp.weight}%</div>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -327,13 +327,13 @@ export const CourseDetailPage: React.FC = () => {
                               e.currentTarget.blur();
                             }
                           }}
-                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
                         />
-                        <span className="text-xs text-gray-500">%</span>
-                        
+                        <span className="text-xs text-gray-500 dark:text-slate-400">%</span>
+
                         <button
                           onClick={() => handleUpdateComponent(comp.id, false, null)}
-                          className="text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 text-xs font-medium px-2 py-1 rounded transition"
+                          className="text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-2 py-1 rounded transition"
                           title="Mark as ungraded"
                         >
                           Ungraded
@@ -357,14 +357,14 @@ export const CourseDetailPage: React.FC = () => {
                             e.currentTarget.value = '';
                           }
                         }}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-20 px-2 py-1 border border-gray-300 rounded text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
                       />
                     )}
 
                     <button
                       onClick={() => handleDeleteComponent(comp.id, comp.name)}
                       aria-label={`Delete ${comp.name}`}
-                      className="text-red-600 hover:text-red-700 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     >
                       <XIcon className="w-4 h-4" />
                     </button>

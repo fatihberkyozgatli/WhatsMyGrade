@@ -32,13 +32,13 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="page-container flex items-center justify-center py-20 px-4">
-      <div className="w-full max-w-md card">
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
-        <p className="text-gray-500 text-sm mb-6">Sign in to your account</p>
+    <div className="page-container flex py-8 px-4">
+      <div className="w-full max-w-md card m-auto">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-1">Welcome back</h2>
+        <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Sign in to your account</p>
 
         {error && (
-          <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm dark:bg-red-950 dark:border-red-900 dark:text-red-300">
             {error}
           </div>
         )}
@@ -73,9 +73,9 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        <p className="text-center text-gray-500 text-sm mt-5">
+        <p className="text-center text-gray-500 dark:text-slate-400 text-sm mt-5">
           Don't have an account?{' '}
-          <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/register" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
             Create one
           </Link>
         </p>

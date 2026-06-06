@@ -1,11 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import api from '../api';
 import { Course, GradeCalculationResult } from '../types';
 import { CourseCard } from '../components/CourseCard';
 import { ConfirmModal } from '../components/ConfirmModal';
 
 export const DashboardPage: React.FC = () => {
+  const reduce = useReducedMotion();
+  const gridVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: reduce ? 0 : 0.05 } },
+  };
+  const cardVariants = reduce
+    ? { hidden: { opacity: 1 }, show: { opacity: 1 } }
+    : {
+        hidden: { opacity: 0, y: 12 },
+        show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' as const } },
+      };
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [gradeData, setGradeData] = useState<{ [key: number]: GradeCalculationResult }>({});
   const [loading, setLoading] = useState(true);
@@ -62,7 +75,7 @@ export const DashboardPage: React.FC = () => {
       <div className="page-container flex items-center justify-center">
         <div className="text-center" role="status">
           <div className="animate-spin motion-reduce:animate-none rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
-          <p className="text-gray-500">Loading courses...</p>
+          <p className="text-gray-500 dark:text-slate-400">Loading courses...</p>
         </div>
       </div>
     );
@@ -73,8 +86,8 @@ export const DashboardPage: React.FC = () => {
       <div className="content-wrapper max-w-6xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Your Courses</h1>
-            <p className="text-gray-500 text-sm mt-1">Track grades and plan your semester</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Your Courses</h1>
+            <p className="text-gray-500 text-sm mt-1 dark:text-slate-400">Track grades and plan your semester</p>
           </div>
           <Link to="/add-course" className="btn-primary text-sm">
             Add Course
@@ -82,30 +95,36 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {error && (
-          <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm dark:bg-red-950 dark:border-red-900 dark:text-red-300">
             {error}
           </div>
         )}
 
         {courses.length === 0 ? (
           <div className="card text-center py-12">
-            <p className="text-gray-500 mb-4">No courses yet. Start by adding your first course.</p>
+            <p className="text-gray-500 mb-4 dark:text-slate-400">No courses yet. Start by adding your first course.</p>
             <Link to="/add-course" className="btn-primary text-sm">
               Add Your First Course
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            variants={gridVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {courses.map((course) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                gradeData={gradeData[course.id]}
-                status={gradeData[course.id]?.status}
-                onDelete={handleDeleteCourse}
-              />
+              <motion.div key={course.id} variants={cardVariants}>
+                <CourseCard
+                  course={course}
+                  gradeData={gradeData[course.id]}
+                  status={gradeData[course.id]?.status}
+                  onDelete={handleDeleteCourse}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
 

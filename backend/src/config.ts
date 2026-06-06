@@ -2,8 +2,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Fail fast at boot if required env vars are missing, instead of letting the
-// server start and surface failures as per-request 500s later.
 const REQUIRED_ENV_VARS = ['DATABASE_URL', 'JWT_SECRET'] as const;
 const missingEnvVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
 if (missingEnvVars.length > 0) {
@@ -14,8 +12,6 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
-// Express's "trust proxy" accepts a boolean, a hop count (number), or a string
-// (e.g. 'loopback'). Parse robustly so TRUST_PROXY=true doesn't become NaN.
 const parseTrustProxy = (value: string | undefined): boolean | number | string => {
   if (!value) return false;
   if (value === 'true') return true;

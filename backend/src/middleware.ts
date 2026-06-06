@@ -35,7 +35,6 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   }
 };
 
-// Fixed session lifetime, so a login near midnight doesn't expire almost instantly.
 const TOKEN_TTL = '7d';
 
 export const generateToken = (userId: number, email: string) => {

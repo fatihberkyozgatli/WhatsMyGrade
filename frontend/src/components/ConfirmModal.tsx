@@ -84,14 +84,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
         aria-describedby="confirm-modal-message"
-        className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4"
+        className="bg-white dark:bg-slate-800 rounded-lg shadow-lg max-w-md w-full mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
-          <h2 id="confirm-modal-title" className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 id="confirm-modal-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2">
             {title}
           </h2>
-          <p id="confirm-modal-message" className="text-gray-600 text-sm mb-6">
+          <p id="confirm-modal-message" className="text-gray-600 dark:text-slate-300 text-sm mb-6">
             {message}
           </p>
 
@@ -99,7 +99,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <button
               ref={cancelButtonRef}
               onClick={onCancel}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800"
             >
               {cancelText}
             </button>

@@ -14,15 +14,15 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
   const getStatusColor = (status?: string) => {
     switch (status) {
       case 'Excellent':
-        return 'text-green-700 bg-green-50 border-green-200';
+        return 'text-green-700 bg-green-50 border-green-200 dark:text-green-300 dark:bg-green-950 dark:border-green-900';
       case 'Good':
-        return 'text-blue-700 bg-blue-50 border-blue-200';
+        return 'text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950 dark:border-blue-900';
       case 'At Risk':
-        return 'text-yellow-700 bg-yellow-50 border-yellow-200';
+        return 'text-yellow-800 bg-yellow-50 border-yellow-200 dark:text-yellow-300 dark:bg-yellow-950 dark:border-yellow-900';
       case 'Needs Improvement':
-        return 'text-red-700 bg-red-50 border-red-200';
+        return 'text-red-700 bg-red-50 border-red-200 dark:text-red-300 dark:bg-red-950 dark:border-red-900';
       default:
-        return 'text-gray-700 bg-gray-50 border-gray-200';
+        return 'text-gray-700 bg-gray-50 border-gray-200 dark:text-slate-300 dark:bg-slate-700 dark:border-slate-600';
     }
   };
 
@@ -65,8 +65,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
       <div className="relative pointer-events-none">
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">{course.name}</h3>
-            <p className="text-sm text-gray-500 mt-0.5">{course.semester}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{course.name}</h3>
+            <p className="text-sm text-gray-500 mt-0.5 dark:text-slate-400">{course.semester}</p>
           </div>
           <div className="flex items-start gap-2">
             {status && (
@@ -77,7 +77,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
             {onDelete && (
               <button
                 onClick={handleDelete}
-                className="pointer-events-auto text-red-700 bg-red-100 hover:bg-red-200 font-semibold p-1.5 rounded transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                className="pointer-events-auto text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-300 dark:bg-red-950 dark:hover:bg-red-900 font-semibold p-1.5 rounded transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 aria-label={`Delete ${course.name}`}
               >
                 <XIcon className="w-4 h-4" />
@@ -87,31 +87,31 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
         </div>
 
         {displayGrade !== undefined && displayGrade !== null && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
             <div className="mb-4">
-              <p className="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide">Current Grade</p>
-              <div className="text-3xl font-semibold text-blue-600">{displayGrade.toFixed(2)}%</div>
+              <p className="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide dark:text-slate-400">Current Grade</p>
+              <div className="text-3xl font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{displayGrade.toFixed(2)}%</div>
             </div>
 
             {gradeData && (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm">
-                  <span className="text-gray-600">Graded:</span>
-                  <span className="font-semibold text-gray-900 tabular-nums">{gradeData.percentageGraded.toFixed(0)}%</span>
-                  <span className="text-gray-400">|</span>
-                  <span className="text-gray-600">Ungraded:</span>
-                  <span className="font-semibold text-gray-900 tabular-nums">{gradeData.percentageRemaining.toFixed(0)}%</span>
+                  <span className="text-gray-600 dark:text-slate-400">Graded:</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{gradeData.percentageGraded.toFixed(0)}%</span>
+                  <span className="text-gray-400 dark:text-slate-600">|</span>
+                  <span className="text-gray-600 dark:text-slate-400">Ungraded:</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{gradeData.percentageRemaining.toFixed(0)}%</span>
                 </div>
 
                 {achievableGrade ? (
-                  <div className="text-sm pt-2 border-t border-gray-100">
-                    <p className="text-gray-700">
+                  <div className="text-sm pt-2 border-t border-gray-100 dark:border-slate-700">
+                    <p className="text-gray-700 dark:text-slate-300">
                       <span className="font-semibold">Need {achievableGrade.required}</span>
                       {ungradedList && (
-                        <span className="text-gray-600"> from <span className="font-medium">{ungradedList}</span></span>
+                        <span className="text-gray-600 dark:text-slate-400"> from <span className="font-medium">{ungradedList}</span></span>
                       )}
-                      <span className="text-gray-600"> for </span>
-                      <span className="font-semibold text-blue-600">{achievableGrade.grade}</span>
+                      <span className="text-gray-600 dark:text-slate-400"> for </span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">{achievableGrade.grade}</span>
                     </p>
                   </div>
                 ) : null}

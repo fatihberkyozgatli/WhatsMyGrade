@@ -28,7 +28,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   const inputType = isPassword && showPassword ? 'text' : type;
 
   return (
-    <div className="mb-5">
+    <div className="mb-3">
       <label htmlFor={id} className="label-text">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -54,7 +54,7 @@ export const FormInput: React.FC<FormInputProps> = ({
             type="button"
             onClick={() => setShowPassword((s) => !s)}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
-            className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             {showPassword ? (
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -70,7 +70,7 @@ export const FormInput: React.FC<FormInputProps> = ({
         )}
       </div>
       {error && (
-        <p id={errorId} className="text-red-500 text-xs mt-1.5">
+        <p id={errorId} className="text-red-500 dark:text-red-400 text-xs mt-1.5">
           {error}
         </p>
       )}

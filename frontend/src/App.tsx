@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { LandingPage } from './pages/LandingPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { LoginPage } from './pages/LoginPage';
@@ -13,12 +14,14 @@ function AppContent() {
 
   return (
     <Router>
-      <Header isAuthenticated={isAuthenticated} onLogout={() => {
-        logout();
-        window.location.href = '/';
-      }} />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
+      <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-slate-900">
+        <Header isAuthenticated={isAuthenticated} onLogout={() => {
+          logout();
+          window.location.href = '/';
+        }} />
+        <main className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
         <Route
           path="/register"
           element={
@@ -43,8 +46,11 @@ function AppContent() {
           path="/course/:courseId"
           element={isAuthenticated ? <CourseDetailPage /> : <Navigate to="/login" />}
         />
-        <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/'} replace />} />
-      </Routes>
+            <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/'} replace />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
     </Router>
   );
 }
