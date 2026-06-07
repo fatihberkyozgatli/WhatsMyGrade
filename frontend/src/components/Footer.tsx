@@ -7,7 +7,7 @@ const iconLink =
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="shrink-0 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+    <footer className="shrink-0 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="text-center sm:text-left">
           <Link

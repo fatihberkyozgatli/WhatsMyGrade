@@ -24,8 +24,6 @@ const isTokenExpired = (token: string): boolean => {
   }
 };
 
-// Read a non-expired token from storage, clearing it if expired. Called both for
-// the synchronous initial state and on focus/storage events.
 const readValidToken = (): string | null => {
   const savedToken = localStorage.getItem('token');
   if (!savedToken) return null;
@@ -37,15 +35,11 @@ const readValidToken = (): string | null => {
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // Initialize synchronously from storage so the first render of a protected
-  // route already knows the user is authenticated (avoids a redirect bounce /
-  // lost deep link on refresh).
   const [token, setToken] = useState<string | null>(readValidToken);
 
   useEffect(() => {
     const checkToken = () => setToken(readValidToken());
 
-    // Re-check when the tab regains focus, and keep auth state in sync across tabs.
     window.addEventListener('focus', checkToken);
     window.addEventListener('storage', checkToken);
     return () => {

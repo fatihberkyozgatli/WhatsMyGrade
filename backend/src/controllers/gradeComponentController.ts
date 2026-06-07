@@ -9,7 +9,6 @@ const schema = {
     name: Joi.string().max(255).required(),
     weight: Joi.number().greater(0).max(100).required(),
     graded: Joi.boolean().default(false),
-    // When graded is true, grade must be a real number (not null/absent).
     grade: Joi.number().min(0).max(100).allow(null).when('graded', {
       is: true,
       then: Joi.required().invalid(null),

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import api from '../api';
 import { Course, GradeCalculationResult } from '../types';
 import { CourseCard } from '../components/CourseCard';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { AddCourseButton } from '../components/AddCourseButton';
 
 export const DashboardPage: React.FC = () => {
   const reduce = useReducedMotion();
@@ -84,14 +84,12 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="page-container">
       <div className="content-wrapper max-w-6xl">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div>
+        <div className="flex justify-between items-start sm:items-center gap-3 mb-8">
+          <div className="min-w-0">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Your Courses</h1>
             <p className="text-gray-500 text-sm mt-1 dark:text-slate-400">Track grades and plan your semester</p>
           </div>
-          <Link to="/add-course" className="btn-primary text-sm">
-            Add Course
-          </Link>
+          <AddCourseButton className="btn-primary text-sm shrink-0">Add Course</AddCourseButton>
         </div>
 
         {error && (
@@ -103,9 +101,7 @@ export const DashboardPage: React.FC = () => {
         {courses.length === 0 ? (
           <div className="card text-center py-12">
             <p className="text-gray-500 mb-4 dark:text-slate-400">No courses yet. Start by adding your first course.</p>
-            <Link to="/add-course" className="btn-primary text-sm">
-              Add Your First Course
-            </Link>
+            <AddCourseButton className="btn-primary text-sm">Add Your First Course</AddCourseButton>
           </div>
         ) : (
           <motion.div

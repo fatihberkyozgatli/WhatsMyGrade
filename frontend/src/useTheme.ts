@@ -12,8 +12,6 @@ const getInitialTheme = (): Theme => {
   }
 };
 
-// Reads/persists the theme and toggles the `dark` class on <html>.
-// An inline script in index.html applies the class pre-render to avoid a flash.
 export const useTheme = (): [Theme, () => void] => {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
@@ -23,7 +21,7 @@ export const useTheme = (): [Theme, () => void] => {
     try {
       localStorage.setItem('theme', theme);
     } catch {
-      /* ignore storage failures */
+
     }
   }, [theme]);
 

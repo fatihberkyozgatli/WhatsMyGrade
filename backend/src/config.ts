@@ -26,4 +26,5 @@ export const config = {
   jwt_secret: process.env.JWT_SECRET as string,
   cors_origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   trust_proxy: parseTrustProxy(process.env.TRUST_PROXY),
+  openai_api_key: process.env.OPENAI_API_KEY || '',
 };

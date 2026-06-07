@@ -31,9 +31,9 @@ export const buildGradeScale = (thresholds: {
 
   return {
     A: { min: A, max: 100 },
-    B: { min: B, max: A - 0.01 },
-    C: { min: C, max: B - 0.01 },
-    D: { min: D, max: C - 0.01 },
-    F: { min: 0, max: D - 0.01 },
+    B: { min: B, max: Math.max(A - 0.01, B) },
+    C: { min: C, max: Math.max(B - 0.01, C) },
+    D: { min: D, max: Math.max(C - 0.01, D) },
+    F: { min: 0, max: Math.max(D - 0.01, 0) },
   };
 };

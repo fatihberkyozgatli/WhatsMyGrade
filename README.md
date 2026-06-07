@@ -11,7 +11,7 @@ A full-stack web application for tracking course grades and calculating the scor
 
 ## Requirements
 
-Node.js (v16+), PostgreSQL (v12+)
+Node.js (v18+), PostgreSQL (v12+)
 
 ## Setup
 

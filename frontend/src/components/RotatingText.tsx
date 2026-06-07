@@ -9,9 +9,6 @@ interface RotatingTextProps {
 
 const splitChars = (text: string): string[] => Array.from(text);
 
-// Rotating tagline answer. framer-motion character stagger (spring) on each
-// word swap. Respects prefers-reduced-motion (renders a static word, no
-// rotation) and exposes the full option list once to screen readers.
 export const RotatingText: React.FC<RotatingTextProps> = ({ items, interval = 2400, className }) => {
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);

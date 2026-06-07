@@ -2,8 +2,6 @@ import React from 'react';
 
 type IconProps = React.SVGProps<SVGSVGElement>;
 
-// Lightweight inline SVG icons (Lucide-style, stroke-based) so we don't ship a
-// whole icon library and don't rely on emoji/text glyphs as icons.
 const base = {
   viewBox: '0 0 24 24',
   fill: 'none',

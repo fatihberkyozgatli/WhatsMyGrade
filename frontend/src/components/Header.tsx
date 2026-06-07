@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { SunIcon, MoonIcon } from './icons';
+import { AddCourseChoiceModal } from './AddCourseChoiceModal';
 import { useTheme } from '../useTheme';
 
 interface HeaderProps {
@@ -17,11 +18,11 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [choiceOpen, setChoiceOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const headerRef = useRef<HTMLElement>(null);
   const [theme, toggleTheme] = useTheme();
 
-  // Dismiss the mobile menu on Escape or a click outside the header.
   useEffect(() => {
     if (!menuOpen) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -43,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
   return (
     <header
       ref={headerRef}
-      className="shrink-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700"
+      className="shrink-0 bg-gray-50 dark:bg-slate-950 border-b border-gray-200 dark:border-slate-700"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link
@@ -65,20 +66,23 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
 
           {isAuthenticated && (
             <>
-              {/* Desktop nav */}
+
               <nav className="hidden sm:flex items-center gap-4">
                 <NavLink to="/dashboard" className={navLinkClass}>
                   Dashboard
                 </NavLink>
-                <NavLink to="/add-course" className={navLinkClass}>
+                <button
+                  type="button"
+                  onClick={() => setChoiceOpen(true)}
+                  className={navLinkClass({ isActive: false })}
+                >
                   Add Course
-                </NavLink>
+                </button>
                 <button onClick={onLogout} className="btn-secondary text-sm">
                   Logout
                 </button>
               </nav>
 
-              {/* Mobile menu toggle */}
               <button
                 type="button"
                 onClick={() => setMenuOpen((open) => !open)}
@@ -100,29 +104,37 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
         </div>
       </div>
 
-      {/* Mobile nav dropdown */}
       {isAuthenticated && menuOpen && (
         <nav
           id="mobile-nav"
-          className="sm:hidden border-t border-gray-200 dark:border-slate-700 px-4 py-3 flex flex-col gap-3"
+          className="sm:hidden border-t border-gray-200 dark:border-slate-700 px-4 py-3 flex flex-col items-center gap-3"
         >
           <NavLink to="/dashboard" onClick={closeMenu} className={navLinkClass}>
             Dashboard
           </NavLink>
-          <NavLink to="/add-course" onClick={closeMenu} className={navLinkClass}>
+          <button
+            type="button"
+            onClick={() => {
+              closeMenu();
+              setChoiceOpen(true);
+            }}
+            className={navLinkClass({ isActive: false })}
+          >
             Add Course
-          </NavLink>
+          </button>
           <button
             onClick={() => {
               closeMenu();
               onLogout();
             }}
-            className="btn-secondary text-sm self-start"
+            className="btn-secondary text-sm"
           >
             Logout
           </button>
         </nav>
       )}
+
+      <AddCourseChoiceModal isOpen={choiceOpen} onClose={() => setChoiceOpen(false)} />
     </header>
   );
 };

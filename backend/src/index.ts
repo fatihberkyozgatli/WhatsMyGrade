@@ -10,15 +10,12 @@ import calculateRoutes from './routes/calculate';
 
 const app = express();
 
-// Accept a comma-separated CORS allowlist so multiple environments work;
-// a single '*' entry means allow any origin.
 const allowedOrigins = config.cors_origin
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
 const corsOrigin = allowedOrigins.includes('*') ? true : allowedOrigins;
 
-// Coarse global limiter for the whole API (auth routes keep a stricter one).
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 300,
@@ -38,13 +35,10 @@ app.use('/api/components', componentRoutes);
 app.use('/api/grade-scale', gradeScaleRoutes);
 app.use('/api/calculate', calculateRoutes);
 
-// 404 for any unmatched route.
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-// Terminal error handler — keeps unexpected throws (e.g. malformed JSON) from
-// leaking stack traces via Express's default handler.
 app.use((err: Error & { type?: string; status?: number }, _req: Request, res: Response, _next: NextFunction) => {
   if (err?.type === 'entity.parse.failed') {
     return res.status(400).json({ error: 'Invalid JSON body' });

@@ -14,8 +14,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// On 401 (expired/revoked token mid-session), clear the token and bounce to
-// login — unless we're already on a public page (avoids a redirect loop).
 api.interceptors.response.use(
   (response) => response,
   (error) => {

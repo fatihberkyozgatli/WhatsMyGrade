@@ -10,7 +10,6 @@ const schema = {
     semester: Joi.string().max(100).required(),
     professor: Joi.string().max(255).optional(),
     notes: Joi.string().max(10000).optional(),
-    // Thresholds must be coherent: 0 <= D < C < B < A <= 100.
     gradingScale: Joi.object({
       A: Joi.number().min(0).max(100).required(),
       B: Joi.number().min(0).less(Joi.ref('A')).required(),
@@ -36,8 +35,6 @@ export const createCourse = async (req: AuthRequest, res: Response) => {
   const { name, semester, professor, notes, gradingScale } = value;
   const userId = req.user?.userId;
 
-  // Course + custom scale must be atomic: don't return 201 with a silently
-  // missing scale. Roll both back if either insert fails.
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

@@ -245,7 +245,8 @@ GET    /api/grade-scale/:courseId     # get scale (returns default if none)
 PUT    /api/grade-scale/:courseId     # create/update scale
 
 # Calculations
-GET    /api/calculate/:courseId       # full grade calculation for a course
+GET    /api/calculate                # batch calculation for all user's courses
+GET    /api/calculate/:courseId      # full grade calculation for a course
 ```
 
 Errors return `{ "error": "message" }` with an appropriate HTTP status.
@@ -263,8 +264,8 @@ remaining_weight = Σ(weight of ungraded components)
 total_weight     = graded_weight + remaining_weight
 
 current_grade        = earned_points / (graded_weight / 100)
-projected_max_grade  = (current_grade × graded_weight + 100 × remaining_weight) / 100
-required_average     = (target_min × 100 − current_grade × graded_weight) / remaining_weight
+projected_max_grade  = (current_grade × graded_weight + 100 × remaining_weight) / total_weight
+required_average     = (target_min × total_weight − current_grade × graded_weight) / remaining_weight
 ```
 
 `projected_max_grade` ("Maximum Obtainable" in the UI) assumes 100% on all remaining work.
@@ -304,7 +305,7 @@ Server-side validation uses Joi schemas inside the controllers.
 
 - **User:** email valid & unique, password ≥ 6 chars, name required; passwords hashed with bcrypt (10 salt rounds).
 - **Course:** name and semester required; ownership verified via `user_id`; `professor`/`notes` optional.
-- **Component:** name required, weight 0–100, grade 0–100 when graded (else `null`); ownership verified through the parent course.
+- **Component:** name required, weight > 0 and ≤ 100, grade 0–100 when graded (else `null`); ownership verified through the parent course.
 - **Grade scale:** validated A > B > C > D ≥ 0 on the client at course creation; a default scale is returned if none exists.
 - **Weight total:** the calculation returns a warning when component weights don't sum to 100% (it does not block).
 
@@ -314,7 +315,7 @@ Server-side validation uses Joi schemas inside the controllers.
 
 ```text
 Login → backend verifies user + bcrypt-compares password
-     → backend signs a JWT (expires at the end of the current day)
+    → backend signs a JWT (fixed TTL: 7 days)
      → frontend stores the token in localStorage
      → axios interceptor attaches it to every request
      → backend middleware verifies the token on protected routes
@@ -322,14 +323,14 @@ Login → backend verifies user + bcrypt-compares password
        logging the user out automatically once the token is stale
 ```
 
-> Note: token lifetime is "until end of day" (computed in `middleware.ts`), not a fixed duration env var.
+> Note: token lifetime is a fixed `7d` in `middleware.ts`.
 
 ---
 
 # 14. Security Notes
 
 - Passwords hashed with bcrypt; password hashes are never returned to the client.
-- JWT secret read from `JWT_SECRET` in `.env`; the middleware fails closed if it is unset.
+- JWT secret read from `JWT_SECRET` in `.env`; startup fails fast if required env vars are missing, and middleware rejects invalid/missing tokens at request time.
 - Every protected handler verifies course/component ownership before reading or mutating data.
 - Database credentials come from environment variables.
 - Use HTTPS in production.
@@ -379,7 +380,7 @@ WhatsMyGrade/
 ├── README.md                 # Project overview
 ├── SystArchV0.md             # Original design record
 ├── SystArchV1.md             # This document (as-built)
-└── TODO.md                   # Next-phase notes (git-ignored)
+└── TODO.md                   # Next-phase notes
 ```
 
 ---

@@ -6,8 +6,6 @@ import { RotatingText } from '../components/RotatingText';
 import { GradeGauge, GradedSplitBar } from '../components/GradeCharts';
 import { BookIcon, ListChecksIcon, TrendingUpIcon } from '../components/icons';
 
-// A polished, self-contained product preview (static sample data) — "show, don't
-// tell". The gauge + split bar animate on mount via their own framer-motion.
 const HeroPreview: React.FC = () => (
   <div className="relative mx-auto w-full max-w-sm">
     <div
@@ -72,16 +70,15 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="page-container flex items-center">
       <div className="content-wrapper relative w-full">
-        {/* Subtle brand-blue grid behind the hero. */}
+
         <div className="hero-grid pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
 
-        {/* Hero: text + live product preview (two columns on large screens) */}
-        <div className="py-6 lg:py-10 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="py-4 lg:py-6 grid lg:grid-cols-2 gap-8 items-center">
           <motion.div {...fadeUp()} className="text-center lg:text-left">
             <p className="text-sm font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-3">
               WhatsMyGrade
             </p>
-            <h1 className="text-4xl sm:text-5xl font-bold mb-2 bg-gradient-to-br from-gray-900 to-blue-700 dark:from-slate-100 dark:to-blue-300 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl font-bold leading-tight pb-1 mb-2 bg-gradient-to-br from-gray-900 to-blue-700 dark:from-slate-100 dark:to-blue-300 bg-clip-text text-transparent">
               What do I need to get?
             </h1>
             <div className="text-2xl sm:text-3xl font-semibold text-blue-600 dark:text-blue-400 mb-6 h-[1.4em] overflow-hidden">
@@ -120,12 +117,11 @@ export const LandingPage: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Compact feature strip (keeps the landing to a single screen) */}
         <motion.div
           variants={cardsContainer}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 sm:grid-cols-3 gap-5 pb-8 pt-8 border-t border-gray-100 dark:border-slate-800"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-5 pb-4 pt-5 border-t border-gray-100 dark:border-slate-800"
         >
           {features.map((f) => {
             const Icon = f.icon;

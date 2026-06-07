@@ -17,7 +17,6 @@ const scaleSchema = Joi.object({
   F: rangeSchema.required(),
 })
   .custom((value, helpers) => {
-    // Letters must be coherent: A.min > B.min > C.min > D.min > F.min.
     const order = ['A', 'B', 'C', 'D', 'F'] as const;
     for (let i = 0; i < order.length - 1; i++) {
       if (value[order[i]].min <= value[order[i + 1]].min) {

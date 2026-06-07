@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
-import { Course, GradeComponent, GradeCalculationResult } from '../types';
+import { Course, GradeComponent, GradeCalculationResult, GradeScale } from '../types';
 import { GradeCalculator } from '../components/GradeCalculator';
 import { FormInput } from '../components/FormInputs';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { EditScaleModal } from '../components/EditScaleModal';
 import { XIcon, ArrowLeftIcon } from '../components/icons';
+
+const buildScale = (t: { A: number; B: number; C: number; D: number }): GradeScale => ({
+  A: { min: t.A, max: 100 },
+  B: { min: t.B, max: Math.max(t.A - 0.01, t.B) },
+  C: { min: t.C, max: Math.max(t.B - 0.01, t.C) },
+  D: { min: t.D, max: Math.max(t.C - 0.01, t.D) },
+  F: { min: 0, max: Math.max(t.D - 0.01, 0) },
+});
 
 export const CourseDetailPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -21,6 +30,11 @@ export const CourseDetailPage: React.FC = () => {
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; type?: 'course' | 'component'; targetId?: number; targetName?: string }>({
     isOpen: false,
   });
+  const [scaleModalOpen, setScaleModalOpen] = useState(false);
+  const [scale, setScale] = useState<GradeScale | null>(null);
+  const [scaleLoading, setScaleLoading] = useState(false);
+  const [scaleSaving, setScaleSaving] = useState(false);
+  const [scaleError, setScaleError] = useState('');
 
   const [newComponent, setNewComponent] = useState({
     name: '',
@@ -167,6 +181,58 @@ export const CourseDetailPage: React.FC = () => {
     }
   };
 
+  const openScaleEditor = async () => {
+    if (!courseId) return;
+    setScaleModalOpen(true);
+    setScaleError('');
+    setScaleLoading(true);
+    setScale(null);
+    try {
+      const res = await api.get(`/grade-scale/${courseId}`);
+      setScale(res.data);
+    } catch (err) {
+      console.error('Failed to load grading scale:', err);
+      setScaleError('Could not load the saved scale — showing defaults.');
+      setScale({
+        A: { min: 90, max: 100 },
+        B: { min: 80, max: 89.99 },
+        C: { min: 70, max: 79.99 },
+        D: { min: 60, max: 69.99 },
+        F: { min: 0, max: 59.99 },
+      });
+    } finally {
+      setScaleLoading(false);
+    }
+  };
+
+  const closeScaleEditor = () => {
+    setScaleModalOpen(false);
+    setScaleError('');
+  };
+
+  const handleSaveScale = async (thresholds: { A: number; B: number; C: number; D: number }) => {
+    if (!courseId) return;
+    setScaleSaving(true);
+    setScaleError('');
+    try {
+      const res = await api.put(`/grade-scale/${courseId}`, buildScale(thresholds));
+      setScale(res.data);
+
+      try {
+        const calcRes = await api.get(`/calculate/${courseId}`);
+        setCalculation(calcRes.data);
+      } catch (err) {
+        console.error('Failed to reload calculations:', err);
+      }
+
+      setScaleModalOpen(false);
+    } catch (err: any) {
+      setScaleError(err.response?.data?.error || 'Failed to save grading scale');
+    } finally {
+      setScaleSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="page-container flex items-center justify-center">
@@ -216,17 +282,19 @@ export const CourseDetailPage: React.FC = () => {
         )}
 
         {course && (
-          <div className="mb-8 flex justify-between items-start">
-            <div className="flex-1">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
+            <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">{course.name}</h1>
               {course.semester && <p className="text-sm text-gray-500 mt-2 dark:text-slate-400">{course.semester}</p>}
             </div>
-            <button
-              onClick={handleDeleteCourse}
-              className="btn-danger text-sm ml-4"
-            >
-              Delete Course
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button onClick={openScaleEditor} className="btn-secondary text-sm">
+                Edit Grading Scale
+              </button>
+              <button onClick={handleDeleteCourse} className="btn-danger text-sm">
+                Delete Course
+              </button>
+            </div>
           </div>
         )}
 
@@ -308,14 +376,11 @@ export const CourseDetailPage: React.FC = () => {
                           onBlur={(e) => {
                             const raw = e.target.value;
                             if (raw === '') {
-                              // Clearing reverts to ungraded instead of sending NaN/null.
                               handleUpdateComponent(comp.id, false, null);
                               return;
                             }
                             const parsed = parseFloat(raw);
                             if (Number.isNaN(parsed) || parsed < 0 || parsed > 100) {
-                              // Invalid entry: snap the field back to the last saved grade
-                              // and surface an error instead of leaving a stale value.
                               e.target.value = String(comp.grade);
                               setError('Grade must be between 0 and 100');
                               return;
@@ -345,7 +410,8 @@ export const CourseDetailPage: React.FC = () => {
                         min="0"
                         max="100"
                         step="0.01"
-                        placeholder="—"
+                        placeholder="-"
+                        aria-label={`Enter grade for ${comp.name}`}
                         onBlur={(e) => {
                           if (e.target.value) {
                             handleUpdateComponent(comp.id, true, parseFloat(e.target.value));
@@ -389,6 +455,16 @@ export const CourseDetailPage: React.FC = () => {
         isDangerous={true}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModal({ isOpen: false })}
+      />
+
+      <EditScaleModal
+        isOpen={scaleModalOpen}
+        scale={scale}
+        loading={scaleLoading}
+        saving={scaleSaving}
+        error={scaleError}
+        onSave={handleSaveScale}
+        onCancel={closeScaleEditor}
       />
     </div>
   );

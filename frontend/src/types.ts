@@ -21,6 +21,13 @@ export interface GradeComponent {
   updated_at: string;
 }
 
+export interface GradeRange {
+  min: number;
+  max: number;
+}
+
+export type GradeScale = Record<'A' | 'B' | 'C' | 'D' | 'F', GradeRange>;
+
 export interface GradeCalculationResult {
   currentGrade: number | null;
   percentageGraded: number;

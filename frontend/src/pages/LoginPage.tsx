@@ -32,9 +32,9 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="page-container flex py-8 px-4">
+    <div className="page-container flex py-3 sm:py-8 px-4">
       <div className="w-full max-w-md card m-auto">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-1">Welcome back</h2>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-1">Welcome back</h1>
         <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Sign in to your account</p>
 
         {error && (

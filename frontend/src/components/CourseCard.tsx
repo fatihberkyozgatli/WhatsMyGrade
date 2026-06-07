@@ -55,8 +55,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
 
   return (
     <div className="card hover:shadow-lg relative">
-      {/* Stretched overlay link keeps the whole card navigable without nesting the
-          delete <button> inside an <a> (invalid HTML / keyboard-ambiguous). */}
       <Link
         to={`/course/${course.id}`}
         aria-label={`View ${course.name}`}

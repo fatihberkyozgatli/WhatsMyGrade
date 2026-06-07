@@ -9,7 +9,6 @@ export const AddCoursePage: React.FC = () => {
     name: '',
     semester: '',
   });
-  // Threshold fields allow '' so a cleared input isn't silently coerced to 0.
   const [gradingScale, setGradingScale] = useState<{
     A: number | '';
     B: number | '';
