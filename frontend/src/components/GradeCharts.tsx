@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
-export const GradeGauge: React.FC<{ value: number | null }> = ({ value }) => {
+export const GradeGauge: React.FC<{ value: number | null; label?: string }> = ({ value, label = 'Current grade' }) => {
   const reduce = useReducedMotion();
   const cx = 100;
   const cy = 100;
@@ -10,7 +10,7 @@ export const GradeGauge: React.FC<{ value: number | null }> = ({ value }) => {
   const v = Math.max(0, Math.min(100, value ?? 0));
   const track = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
   const arcLength = Math.PI * r;
-  const target = arcLength * (1 - v / 100); // dashoffset that reveals fraction v
+  const target = arcLength * (1 - v / 100);
   const colorClass =
     v >= 90
       ? 'stroke-green-600 dark:stroke-green-400'
@@ -25,7 +25,7 @@ export const GradeGauge: React.FC<{ value: number | null }> = ({ value }) => {
       viewBox="0 0 200 116"
       className="w-full max-w-[240px]"
       role="img"
-      aria-label={`Current grade ${hasValue ? `${v.toFixed(2)} percent` : 'not available'}`}
+      aria-label={`${label} ${hasValue ? `${v.toFixed(2)} percent` : 'not available'}`}
     >
       <path
         d={track}
@@ -102,50 +102,65 @@ export const GradedSplitBar: React.FC<{ graded: number; remaining: number }> = (
 export const LetterRequirementBars: React.FC<{ requirements: { [key: string]: string } }> = ({
   requirements,
 }) => {
-  const entries = Object.entries(requirements);
+  const ORDER = ['A', 'B', 'C', 'D'] as const;
+  let securedLetter: string | null = null;
+  const rows: { letter: string; req: string }[] = [];
+  for (const letter of ORDER) {
+    const req = requirements[letter];
+    if (!req) continue;
+    if (req === 'Already secured') {
+      securedLetter = letter;
+      break;
+    }
+    if (req === 'No longer possible' || !Number.isNaN(parseFloat(req))) {
+      rows.push({ letter, req });
+    }
+  }
+
+  if (rows.length === 0 && !securedLetter) {
+    return (
+      <p className="text-sm text-gray-500 dark:text-slate-400">Add graded components to see requirements.</p>
+    );
+  }
 
   return (
-    <ul className="space-y-2.5">
-      {entries.map(([letter, req]) => {
-        const pct = parseFloat(req);
-        const isPct = !Number.isNaN(pct);
-        const secured = req === 'Already secured';
-        const impossible = req === 'No longer possible';
-
-        const fill = secured ? 100 : isPct ? Math.max(0, Math.min(100, pct)) : 0;
-        const barColor = secured
-          ? 'bg-green-500 dark:bg-green-400'
-          : impossible
-          ? 'bg-red-300'
-          : isPct
-          ? pct <= 60
+    <div className="space-y-3">
+      <ul className="space-y-2.5">
+        {rows.map(({ letter, req }) => {
+          const pct = parseFloat(req);
+          const impossible = req === 'No longer possible';
+          const fill = impossible ? 0 : Math.max(0, Math.min(100, pct));
+          const barColor = impossible
+            ? 'bg-red-300 dark:bg-red-500'
+            : pct <= 60
             ? 'bg-green-500 dark:bg-green-400'
             : pct <= 85
-            ? 'bg-amber-500'
-            : 'bg-red-500 dark:bg-red-400'
-          : 'bg-gray-300 dark:bg-slate-500';
-        const labelColor = secured
-          ? 'text-green-700 dark:text-green-400'
-          : impossible
-          ? 'text-red-700 dark:text-red-400'
-          : 'text-gray-700 dark:text-slate-300';
-        const label = secured ? 'Secured' : impossible ? 'Not possible' : isPct ? `Need ${req}` : req;
-
-        return (
-          <li key={letter} className="flex items-center gap-3">
-            <span className="w-5 shrink-0 text-center font-semibold text-gray-900 dark:text-slate-100">{letter}</span>
-            <div className="relative flex-1 h-2.5 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">
-              <div
-                className={`absolute inset-y-0 left-0 rounded-full ${barColor}`}
-                style={{ width: `${fill}%` }}
-              />
-            </div>
-            <span className={`w-32 shrink-0 text-right text-xs font-medium tabular-nums ${labelColor}`}>
-              {label}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
+            ? 'bg-amber-500 dark:bg-amber-400'
+            : 'bg-red-500 dark:bg-red-400';
+          const labelColor = impossible ? 'text-red-700 dark:text-red-400' : 'text-gray-700 dark:text-slate-300';
+          return (
+            <li key={letter} className="flex items-center gap-3">
+              <span className="w-5 shrink-0 text-center font-semibold text-gray-900 dark:text-slate-100">{letter}</span>
+              <div className="relative flex-1 h-2.5 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">
+                <div className={`absolute inset-y-0 left-0 rounded-full ${barColor}`} style={{ width: `${fill}%` }} />
+              </div>
+              <span className={`w-28 shrink-0 text-right text-xs font-medium tabular-nums ${labelColor}`}>
+                {impossible ? 'Not possible' : `Need ${req}`}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      {securedLetter && (
+        <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>
+            Minimum <span className="font-semibold">{securedLetter}</span> secured
+          </span>
+        </div>
+      )}
+    </div>
   );
 };

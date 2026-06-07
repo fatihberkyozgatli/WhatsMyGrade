@@ -54,7 +54,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
   const ungradedList = ungradedComponents.length > 0 ? ungradedComponents.join(' & ') : null;
 
   return (
-    <div className="card hover:shadow-lg relative">
+    <div className="card hover:shadow-lg relative h-full">
       <Link
         to={`/course/${course.id}`}
         aria-label={`View ${course.name}`}
@@ -63,7 +63,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
       <div className="relative pointer-events-none">
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{course.name}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 line-clamp-2 min-h-[3.5rem]" title={course.name}>{course.name}</h3>
             <p className="text-sm text-gray-500 mt-0.5 dark:text-slate-400">{course.semester}</p>
           </div>
           <div className="flex items-start gap-2">
@@ -101,9 +101,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
                   <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{gradeData.percentageRemaining.toFixed(0)}%</span>
                 </div>
 
-                {achievableGrade ? (
-                  <div className="text-sm pt-2 border-t border-gray-100 dark:border-slate-700">
-                    <p className="text-gray-700 dark:text-slate-300">
+                <div className="text-sm pt-2 border-t border-gray-100 dark:border-slate-700 min-h-[3rem]">
+                  {achievableGrade ? (
+                    <p className="text-gray-700 dark:text-slate-300 line-clamp-2">
                       <span className="font-semibold">Need {achievableGrade.required}</span>
                       {ungradedList && (
                         <span className="text-gray-600 dark:text-slate-400"> from <span className="font-medium">{ungradedList}</span></span>
@@ -111,8 +111,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
                       <span className="text-gray-600 dark:text-slate-400"> for </span>
                       <span className="font-semibold text-blue-600 dark:text-blue-400">{achievableGrade.grade}</span>
                     </p>
-                  </div>
-                ) : null}
+                  ) : null}
+                </div>
               </div>
             )}
           </div>

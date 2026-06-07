@@ -47,7 +47,7 @@ export const RotatingText: React.FC<RotatingTextProps> = ({ items, interval = 24
                 type: 'spring',
                 damping: 18,
                 stiffness: 250,
-                delay: (total - 1 - i) * 0.02, // stagger from the last character
+                delay: (total - 1 - i) * 0.02,
               }}
             >
               {ch === ' ' ? ' ' : ch}

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
-import { Course, GradeComponent, GradeCalculationResult, GradeScale } from '../types';
+import { Course, GradeComponent, GradeCalculationResult, GradeScale, DEFAULT_GRADE_SCALE } from '../types';
 import { GradeCalculator } from '../components/GradeCalculator';
 import { FormInput } from '../components/FormInputs';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { EditScaleModal } from '../components/EditScaleModal';
+import { ScenarioModal } from '../components/ScenarioModal';
 import { XIcon, ArrowLeftIcon } from '../components/icons';
 
 const buildScale = (t: { A: number; B: number; C: number; D: number }): GradeScale => ({
@@ -35,6 +36,7 @@ export const CourseDetailPage: React.FC = () => {
   const [scaleLoading, setScaleLoading] = useState(false);
   const [scaleSaving, setScaleSaving] = useState(false);
   const [scaleError, setScaleError] = useState('');
+  const [scenarioOpen, setScenarioOpen] = useState(false);
 
   const [newComponent, setNewComponent] = useState({
     name: '',
@@ -192,14 +194,8 @@ export const CourseDetailPage: React.FC = () => {
       setScale(res.data);
     } catch (err) {
       console.error('Failed to load grading scale:', err);
-      setScaleError('Could not load the saved scale — showing defaults.');
-      setScale({
-        A: { min: 90, max: 100 },
-        B: { min: 80, max: 89.99 },
-        C: { min: 70, max: 79.99 },
-        D: { min: 60, max: 69.99 },
-        F: { min: 0, max: 59.99 },
-      });
+      setScaleError('Could not load the saved scale; showing defaults.');
+      setScale(DEFAULT_GRADE_SCALE);
     } finally {
       setScaleLoading(false);
     }
@@ -284,10 +280,15 @@ export const CourseDetailPage: React.FC = () => {
         {course && (
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">{course.name}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 truncate" title={course.name}>{course.name}</h1>
               {course.semester && <p className="text-sm text-gray-500 mt-2 dark:text-slate-400">{course.semester}</p>}
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {components.length > 0 && (
+                <button onClick={() => setScenarioOpen(true)} className="btn-primary text-sm">
+                  Run Scenario
+                </button>
+              )}
               <button onClick={openScaleEditor} className="btn-secondary text-sm">
                 Edit Grading Scale
               </button>
@@ -357,19 +358,19 @@ export const CourseDetailPage: React.FC = () => {
             <div className="space-y-2">
               {components.map((comp) => (
                 <div key={comp.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition dark:border-slate-700 dark:hover:bg-slate-700/40">
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900 dark:text-slate-100">{comp.name}</div>
-                    <div className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">Weight: {comp.weight}%</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 dark:text-slate-100 truncate" title={comp.name}>{comp.name}</div>
+                    <div className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">Weight: {Number(comp.weight)}%</div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 shrink-0">
                     {comp.graded && comp.grade !== null ? (
                       <>
                         <input
                           type="number"
                           min="0"
                           max="100"
-                          step="0.01"
+                          step="any"
                           key={comp.grade}
                           defaultValue={comp.grade}
                           aria-label={`Grade for ${comp.name}`}
@@ -392,16 +393,17 @@ export const CourseDetailPage: React.FC = () => {
                               e.currentTarget.blur();
                             }
                           }}
-                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
+                          className="w-16 px-2 py-1 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
                         />
                         <span className="text-xs text-gray-500 dark:text-slate-400">%</span>
 
                         <button
                           onClick={() => handleUpdateComponent(comp.id, false, null)}
-                          className="text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-2 py-1 rounded transition"
+                          className="shrink-0 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-1.5 py-1 rounded transition"
                           title="Mark as ungraded"
+                          aria-label={`Mark ${comp.name} as ungraded`}
                         >
-                          Ungraded
+                          Clear
                         </button>
                       </>
                     ) : (
@@ -409,21 +411,33 @@ export const CourseDetailPage: React.FC = () => {
                         type="number"
                         min="0"
                         max="100"
-                        step="0.01"
-                        placeholder="-"
+                        step="any"
+                        placeholder="score"
                         aria-label={`Enter grade for ${comp.name}`}
                         onBlur={(e) => {
-                          if (e.target.value) {
-                            handleUpdateComponent(comp.id, true, parseFloat(e.target.value));
+                          const raw = e.target.value;
+                          if (!raw) return;
+                          const parsed = parseFloat(raw);
+                          if (Number.isNaN(parsed) || parsed < 0 || parsed > 100) {
+                            e.target.value = '';
+                            setError('Grade must be between 0 and 100');
+                            return;
                           }
+                          handleUpdateComponent(comp.id, true, parsed);
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && e.currentTarget.value) {
-                            handleUpdateComponent(comp.id, true, parseFloat(e.currentTarget.value));
-                            e.currentTarget.value = '';
+                          if (e.key !== 'Enter') return;
+                          const raw = e.currentTarget.value;
+                          if (!raw) return;
+                          const parsed = parseFloat(raw);
+                          if (Number.isNaN(parsed) || parsed < 0 || parsed > 100) {
+                            setError('Grade must be between 0 and 100');
+                            return;
                           }
+                          handleUpdateComponent(comp.id, true, parsed);
+                          e.currentTarget.value = '';
                         }}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
+                        className="w-16 px-2 py-1 border border-gray-300 rounded text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
                       />
                     )}
 
@@ -465,6 +479,13 @@ export const CourseDetailPage: React.FC = () => {
         error={scaleError}
         onSave={handleSaveScale}
         onCancel={closeScaleEditor}
+      />
+
+      <ScenarioModal
+        isOpen={scenarioOpen}
+        onClose={() => setScenarioOpen(false)}
+        courseId={courseId!}
+        components={components}
       />
     </div>
   );

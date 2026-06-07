@@ -111,7 +111,7 @@ export const DashboardPage: React.FC = () => {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {courses.map((course) => (
-              <motion.div key={course.id} variants={cardVariants}>
+              <motion.div key={course.id} variants={cardVariants} className="h-full">
                 <CourseCard
                   course={course}
                   gradeData={gradeData[course.id]}
