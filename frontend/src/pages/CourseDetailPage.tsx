@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { LayoutGroup, motion } from 'framer-motion';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { Course, GradeComponent, GradeCalculationResult, GradeScale, DEFAULT_GRADE_SCALE } from '../types';
@@ -284,12 +285,13 @@ export const CourseDetailPage: React.FC = () => {
         )}
 
         {course && (
-          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between transition-all duration-300">
-            <div className="min-w-0 flex-1">
+          <LayoutGroup>
+          <div className={`mb-8 flex gap-3 ${coachOpen ? 'flex-col' : 'flex-col sm:flex-row sm:items-start sm:justify-between'}`}>
+            <motion.div layout="position" transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }} className="min-w-0 flex-1">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 truncate" title={course.name}>{course.name}</h1>
               {course.semester && <p className="text-sm text-gray-500 mt-2 dark:text-slate-400">{course.semester}</p>}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 shrink-0 transition-all duration-300">
+            </motion.div>
+            <motion.div layout="position" transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }} className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setCoachOpen(o => !o)}
                 aria-expanded={coachOpen}
@@ -312,8 +314,9 @@ export const CourseDetailPage: React.FC = () => {
               <button onClick={handleDeleteCourse} className="btn-danger text-sm">
                 Delete Course
               </button>
-            </div>
+            </motion.div>
           </div>
+          </LayoutGroup>
         )}
 
         {calculation && (
