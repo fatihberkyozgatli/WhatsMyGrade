@@ -79,13 +79,13 @@
 
 - [x] Desktop split-view layout toggle (stacked ↔ two-column) on Course Detail, persisted in localStorage
 - [x] Redesign login/sign-up page — split-screen layout (form + brand panel)
-- [ ] Fix Score button — the score text gets cut off / isn't fully visible
+- [x] Fix Score button — the score text gets cut off / isn't fully visible
 - [x] Grade inputs — inline "%" suffix and validate on blur
-- [ ] GradeGauge color zones should follow the course's custom grade scale (currently hard-coded 90/80/70)
-- [ ] Loading skeletons instead of spinners while fetching
+- [x] GradeGauge color zones should follow the course's custom grade scale (currently hard-coded 90/80/70)
+- [x] Loading skeletons instead of spinners while fetching
 - [ ] Mobile responsive audit and fixes
 - [x] Toast notifications (success + destructive with Undo) — course/component create/delete, scale save
-- [ ] Help / info button in the navbar — context-aware popup (different content for dashboard, course pages, landing, login/signup)
+- [x] Help / info button in the navbar — context-aware popup (different content for dashboard, course pages, landing, login/signup)
 
 ---
 
@@ -99,5 +99,28 @@
 
 ## Legal
 
-- [ ] Terms of Service / user agreement (page or modal, linked from signup and footer)
-- [ ] Disclaimer — grades are estimates, not official records
+- [x] Terms of Service / user agreement (page or modal, linked from signup and footer)
+- [x] Disclaimer — grades are estimates, not official records
+
+---
+
+## Audit Follow-ups (tri-review: frontend-design + ui-ux-pro-max)
+
+### Quick wins
+- [ ] Reset `--app-header-h` to `0px` when the header unmounts — toast offset is stale on `/login` and `/register`
+- [ ] Bump "At Risk" yellow badge to `text-yellow-900` (light) — current `text-yellow-800` on `yellow-50` is ~4.0:1
+- [ ] Swap app shell `h-screen` → `h-dvh`/`min-h-dvh` so mobile browser chrome doesn't clip the footer
+- [ ] Key `UploadSyllabusPage` editable component rows by a stable id, not array index (wrong-row state on mid-list delete)
+- [ ] Add `inputMode="decimal"` to the remaining raw number inputs (ScenarioModal, UploadSyllabusPage weights)
+- [ ] Inline spinner inside submit buttons during async (Login, Register, AddCourse, Grade Coach send)
+- [ ] Toast `destructive` variant uses a green-style CheckIcon tinted red — use a trash/info glyph instead
+
+### Larger
+- [ ] Body font: Atkinson Hyperlegible only ships 400/700, but UI uses `font-medium`/`font-semibold` (faux bold) — drop those to 700 or switch body font
+- [ ] Mobile touch targets <44px — inline grade inputs height, icon-only delete/close buttons (~28px), mobile nav links
+- [ ] Move inputs to ≥16px on mobile to stop iOS focus auto-zoom
+- [ ] Render modals via a portal + unify the z-index scale (drawer 40 / modal 50 / toast 100)
+- [ ] Reduced-motion guards on `GradeCalculator`, `GradeCoach` TypingDots, and `RotatingText` interval
+- [ ] Grade Coach chat `aria-live` wraps the whole transcript — scope it to new assistant messages
+- [ ] Logout uses a full-page reload — switch to SPA `navigate('/')`
+- [ ] Per-field validation + focus-first-invalid in EditScaleModal / AddCoursePage / UploadSyllabusPage

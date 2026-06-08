@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { RotatingText } from './RotatingText';
 import { GradeGauge, GradedSplitBar } from './GradeCharts';
+import { HelpMenu } from './HelpMenu';
+import { ThemeToggle } from './ThemeToggle';
 import { BookIcon } from './icons';
 
 interface AuthLayoutProps {
@@ -25,15 +27,21 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ title, subtitle, childre
   return (
     <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 bg-white dark:bg-slate-900">
       <div className="flex flex-col px-6 py-8 sm:px-10 lg:px-16">
-        <Link
-          to="/"
-          className="inline-flex w-fit items-center gap-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-            <BookIcon className="h-5 w-5" />
-          </span>
-          <span className="text-lg font-bold text-gray-900 dark:text-slate-100">WhatsMyGrade</span>
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            to="/"
+            className="inline-flex w-fit items-center gap-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+              <BookIcon className="h-5 w-5" />
+            </span>
+            <span className="text-lg font-bold text-gray-900 dark:text-slate-100">WhatsMyGrade</span>
+          </Link>
+          <div className="flex items-center gap-1">
+            <HelpMenu />
+            <ThemeToggle />
+          </div>
+        </div>
 
         <div className="flex flex-1 items-center py-8">
           <motion.div {...enter} className="mx-auto w-full max-w-md">

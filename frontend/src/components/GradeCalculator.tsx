@@ -1,15 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { GradeCalculationResult } from '../types';
+import { GradeCalculationResult, GradeScale } from '../types';
 import { GradeGauge, GradedSplitBar, LetterRequirementBars } from './GradeCharts';
 import { formatGradePercent } from '../utils/formatters';
 
 interface GradeCalculatorProps {
   result: GradeCalculationResult;
   compact?: boolean;
+  scale?: GradeScale;
 }
 
-export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result, compact = false }) => {
+export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result, compact = false, scale }) => {
   if (!result) {
     return (
       <div className="card text-center py-8">
@@ -53,7 +54,6 @@ export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result, compac
       className="card"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
       transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
     >
       {result.weightWarning && (
@@ -70,7 +70,7 @@ export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result, compac
           transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1, delay: 0.1 }}
         >
           <p className="text-xs text-blue-700 font-medium uppercase tracking-wide mb-2 self-start dark:text-blue-300">Current Grade</p>
-          <GradeGauge value={result.currentGrade} />
+          <GradeGauge value={result.currentGrade} scale={scale} />
           <span
             className={`mt-1 px-3 py-1 rounded-full text-sm font-semibold border ${getStatusBg(result.status)} ${getStatusColor(result.status)}`}
           >

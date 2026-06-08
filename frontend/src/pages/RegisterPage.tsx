@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
 import { AuthLayout } from '../components/AuthLayout';
+import { TermsModal } from '../components/TermsModal';
 import { useAuth } from '../AuthContext';
 
 export const RegisterPage: React.FC = () => {
@@ -14,6 +15,7 @@ export const RegisterPage: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -113,7 +115,21 @@ export const RegisterPage: React.FC = () => {
         <button type="submit" disabled={loading} className="btn-primary mt-2 w-full">
           {loading ? 'Creating account...' : 'Create Account'}
         </button>
+
+        <p className="mt-4 text-center text-xs text-gray-500 dark:text-slate-400">
+          By creating an account, you agree to our{' '}
+          <button
+            type="button"
+            onClick={() => setTermsOpen(true)}
+            className="rounded font-medium text-blue-600 hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            Terms of Service
+          </button>
+          . Grades shown are estimates, not official records.
+        </p>
       </form>
+
+      <TermsModal isOpen={termsOpen} onClose={() => setTermsOpen(false)} />
     </AuthLayout>
   );
 };

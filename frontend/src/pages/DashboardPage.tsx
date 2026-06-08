@@ -5,6 +5,7 @@ import { Course, GradeCalculationResult } from '../types';
 import { CourseCard } from '../components/CourseCard';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { AddCourseButton } from '../components/AddCourseButton';
+import { DashboardSkeleton } from '../components/Skeletons';
 import { useToast } from '../ToastContext';
 
 export const DashboardPage: React.FC = () => {
@@ -74,14 +75,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="page-container flex items-center justify-center">
-        <div className="text-center" role="status">
-          <div className="animate-spin motion-reduce:animate-none rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
-          <p className="text-gray-500 dark:text-slate-400">Loading courses...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

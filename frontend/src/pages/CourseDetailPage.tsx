@@ -10,6 +10,7 @@ import { EditScaleModal } from '../components/EditScaleModal';
 import { ScenarioModal } from '../components/ScenarioModal';
 import { XIcon, ArrowLeftIcon } from '../components/icons';
 import { GradeCoach } from '../components/GradeCoach';
+import { CourseDetailSkeleton } from '../components/Skeletons';
 import { useToast } from '../ToastContext';
 
 const buildScale = (t: { A: number; B: number; C: number; D: number }): GradeScale => ({
@@ -76,6 +77,15 @@ export const CourseDetailPage: React.FC = () => {
         } catch (err) {
           console.error('Failed to load calculations:', err);
         }
+
+        api
+          .get(`/grade-scale/${courseId}`)
+          .then((scaleRes) => {
+            if (!cancelled) setScale(scaleRes.data);
+          })
+          .catch((err) => {
+            console.error('Failed to load grading scale:', err);
+          });
       } catch (err: any) {
         if (cancelled) return;
         setInitialLoadError(err.response?.data?.error || 'Failed to load course');
@@ -231,7 +241,6 @@ export const CourseDetailPage: React.FC = () => {
     setScaleModalOpen(true);
     setScaleError('');
     setScaleLoading(true);
-    setScale(null);
     try {
       const res = await api.get(`/grade-scale/${courseId}`);
       setScale(res.data);
@@ -274,14 +283,7 @@ export const CourseDetailPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="page-container flex items-center justify-center">
-        <div className="text-center" role="status">
-          <div className="animate-spin motion-reduce:animate-none rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
-          <p className="text-gray-500 dark:text-slate-400">Loading course details...</p>
-        </div>
-      </div>
-    );
+    return <CourseDetailSkeleton />;
   }
 
   if (initialLoadError || !course) {
@@ -332,12 +334,12 @@ export const CourseDetailPage: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 truncate" title={course.name}>{course.name}</h1>
               {course.semester && <p className="text-sm text-gray-500 mt-2 dark:text-slate-400">{course.semester}</p>}
             </motion.div>
-            <motion.div layout="position" transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }} className="flex flex-wrap items-center gap-2">
+            <motion.div layout="position" transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }} className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
               <button
                 onClick={() => setCoachOpen(o => !o)}
                 aria-expanded={coachOpen}
                 aria-controls="grade-coach-drawer"
-                className={`text-sm flex items-center gap-1.5 ${coachOpen ? 'btn-secondary' : 'btn-primary'}`}
+                className={`text-sm flex items-center justify-center gap-1.5 col-span-2 ${coachOpen ? 'btn-secondary' : 'btn-primary'}`}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="w-4 h-4">
                   <path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z" />
@@ -352,7 +354,7 @@ export const CourseDetailPage: React.FC = () => {
               <button onClick={openScaleEditor} className="btn-secondary text-sm">
                 Edit Grading Scale
               </button>
-              <button onClick={handleDeleteCourse} className="btn-danger text-sm">
+              <button onClick={handleDeleteCourse} className="btn-danger text-sm col-span-2">
                 Delete Course
               </button>
             </motion.div>
@@ -373,7 +375,7 @@ export const CourseDetailPage: React.FC = () => {
               transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
               className={splitActive ? 'mb-8 lg:mb-0 lg:sticky lg:top-6' : 'mb-8'}
             >
-              <GradeCalculator result={calculation} compact={splitActive} />
+              <GradeCalculator result={calculation} compact={splitActive} scale={scale ?? undefined} />
             </motion.div>
           )}
 
@@ -434,13 +436,14 @@ export const CourseDetailPage: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {components.map((comp) => (
-                <div key={comp.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition dark:border-slate-700 dark:hover:bg-slate-700/40">
-                  <div className="flex-1 min-w-0">
+                <div key={comp.id} className="flex flex-col gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition dark:border-slate-700 dark:hover:bg-slate-700/40 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                  <div className="min-w-0 sm:flex-1">
                     <div className="font-medium text-gray-900 dark:text-slate-100 truncate" title={comp.name}>{comp.name}</div>
                     <div className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">Weight: {Number(comp.weight)}%</div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 w-full justify-between sm:w-auto sm:justify-normal shrink-0">
+                    <div className="flex items-center gap-2">
                     {comp.graded && comp.grade !== null ? (
                       <>
                         <input
@@ -448,6 +451,7 @@ export const CourseDetailPage: React.FC = () => {
                           min="0"
                           max="100"
                           step="any"
+                          inputMode="decimal"
                           key={comp.grade}
                           defaultValue={comp.grade}
                           aria-label={`Grade for ${comp.name}`}
@@ -470,18 +474,9 @@ export const CourseDetailPage: React.FC = () => {
                               e.currentTarget.blur();
                             }
                           }}
-                          className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
+                          className="w-20 px-2.5 py-1.5 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
                         />
                         <span className="text-xs text-gray-500 dark:text-slate-400">%</span>
-
-                        <button
-                          onClick={() => handleUpdateComponent(comp.id, false, null)}
-                          className="shrink-0 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-1.5 py-1 rounded transition"
-                          title="Mark as ungraded"
-                          aria-label={`Mark ${comp.name} as ungraded`}
-                        >
-                          Clear
-                        </button>
                       </>
                     ) : (
                       <input
@@ -489,7 +484,8 @@ export const CourseDetailPage: React.FC = () => {
                         min="0"
                         max="100"
                         step="any"
-                        placeholder="score"
+                        inputMode="decimal"
+                        placeholder="Score"
                         aria-label={`Enter grade for ${comp.name}`}
                         onBlur={(e) => {
                           const raw = e.target.value;
@@ -514,17 +510,31 @@ export const CourseDetailPage: React.FC = () => {
                           handleUpdateComponent(comp.id, true, parsed);
                           e.currentTarget.value = '';
                         }}
-                        className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
+                        className="w-20 px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
                       />
                     )}
+                    </div>
 
-                    <button
-                      onClick={() => handleDeleteComponent(comp.id, comp.name)}
-                      aria-label={`Delete ${comp.name}`}
-                      className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                    >
-                      <XIcon className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {comp.graded && comp.grade !== null && (
+                        <button
+                          onClick={() => handleUpdateComponent(comp.id, false, null)}
+                          className="shrink-0 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-1.5 py-1 rounded transition"
+                          title="Mark as ungraded"
+                          aria-label={`Mark ${comp.name} as ungraded`}
+                        >
+                          Clear
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleDeleteComponent(comp.id, comp.name)}
+                        aria-label={`Delete ${comp.name}`}
+                        className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      >
+                        <XIcon className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

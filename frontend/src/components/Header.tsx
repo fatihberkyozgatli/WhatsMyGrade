@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { SunIcon, MoonIcon } from './icons';
 import { AddCourseChoiceModal } from './AddCourseChoiceModal';
-import { useTheme } from '../useTheme';
+import { HelpMenu } from './HelpMenu';
+import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
   isAuthenticated: boolean;
@@ -23,7 +23,6 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
   const [choiceOpen, setChoiceOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const headerRef = useRef<HTMLElement>(null);
-  const [theme, toggleTheme] = useTheme();
 
   const isOnCourseDetail = location.pathname.startsWith('/course/');
   const splitView = isOnCourseDetail && localStorage.getItem('wmg-course-layout') === 'split';
@@ -114,14 +113,9 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
             )}
           </AnimatePresence>
 
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="inline-flex items-center justify-center p-2 rounded text-gray-600 hover:text-blue-600 hover:bg-gray-100 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-          >
-            {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
-          </button>
+          <HelpMenu />
+
+          <ThemeToggle />
 
           {isAuthenticated && (
             <>

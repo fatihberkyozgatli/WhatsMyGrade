@@ -1,8 +1,13 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { GradeScale, DEFAULT_GRADE_SCALE } from '../types';
 import { formatGradePercent, formatGrade } from '../utils/formatters';
 
-export const GradeGauge: React.FC<{ value: number | null; label?: string }> = ({ value, label = 'Current grade' }) => {
+export const GradeGauge: React.FC<{ value: number | null; label?: string; scale?: GradeScale }> = ({
+  value,
+  label = 'Current grade',
+  scale = DEFAULT_GRADE_SCALE,
+}) => {
   const reduce = useReducedMotion();
   const cx = 100;
   const cy = 100;
@@ -13,11 +18,11 @@ export const GradeGauge: React.FC<{ value: number | null; label?: string }> = ({
   const arcLength = Math.PI * r;
   const target = arcLength * (1 - v / 100);
   const colorClass =
-    v >= 90
+    v >= scale.A.min
       ? 'stroke-green-600 dark:stroke-green-400'
-      : v >= 80
+      : v >= scale.B.min
       ? 'stroke-blue-600 dark:stroke-blue-400'
-      : v >= 70
+      : v >= scale.C.min
       ? 'stroke-amber-500 dark:stroke-amber-400'
       : 'stroke-red-600 dark:stroke-red-400';
 
@@ -88,11 +93,11 @@ export const GradedSplitBar: React.FC<{ graded: number; remaining: number }> = (
       </div>
       <div className="flex justify-between text-xs mt-2">
         <span className="text-gray-600 dark:text-slate-400 inline-flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-blue-600" />
+          <span className="w-2.5 h-2.5 rounded-sm bg-blue-600 dark:bg-blue-500" />
           Graded <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{graded.toFixed(0)}%</span>
         </span>
         <span className="text-gray-600 dark:text-slate-400 inline-flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-gray-300 dark:bg-slate-600" />
+          <span className="w-2.5 h-2.5 rounded-sm bg-gray-300 dark:bg-slate-500" />
           Remaining <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{remaining.toFixed(0)}%</span>
         </span>
       </div>
