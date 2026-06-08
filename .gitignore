@@ -3,8 +3,8 @@
 .env.local
 .env.*.local
 
-# Todo/Notes
-TODO.md
+# Local scratch notes (private, not committed)
+NOTES.local.md
 
 # Dependencies
 node_modules/
