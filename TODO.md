@@ -78,7 +78,7 @@
 ## UI / UX Polish
 
 - [x] Desktop split-view layout toggle (stacked ↔ two-column) on Course Detail, persisted in localStorage
-- [ ] Redesign login/sign-up page — half-and-half layout with a visual or a left sidebar
+- [x] Redesign login/sign-up page — split-screen layout (form + brand panel)
 - [ ] Fix Score button — the score text gets cut off / isn't fully visible
 - [x] Grade inputs — inline "%" suffix and validate on blur
 - [ ] GradeGauge color zones should follow the course's custom grade scale (currently hard-coded 90/80/70)

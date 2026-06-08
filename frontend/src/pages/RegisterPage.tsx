@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
+import { AuthLayout } from '../components/AuthLayout';
 import { useAuth } from '../AuthContext';
 
 export const RegisterPage: React.FC = () => {
@@ -45,73 +46,74 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="page-container flex py-3 sm:py-8 px-4">
-      <div className="w-full max-w-md card m-auto">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-1">Create account</h1>
-        <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">Join WhatsMyGrade to track your grades</p>
-
-        {error && (
-          <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm dark:bg-red-950 dark:border-red-900 dark:text-red-300">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate>
-          <FormInput
-            label="Full Name"
-            value={formData.name}
-            onChange={(value) => setFormData({ ...formData, name: String(value) })}
-            required
-            autoComplete="name"
-            placeholder="John Doe"
-          />
-
-          <FormInput
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={(value) => setFormData({ ...formData, email: String(value) })}
-            required
-            autoComplete="email"
-            placeholder="you@example.com"
-          />
-
-          <FormInput
-            label="Password"
-            type="password"
-            value={formData.password}
-            onChange={(value) => setFormData({ ...formData, password: String(value) })}
-            required
-            autoComplete="new-password"
-            placeholder="Enter your password"
-          />
-
-          <FormInput
-            label="Confirm Password"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={(value) => setFormData({ ...formData, confirmPassword: String(value) })}
-            required
-            autoComplete="new-password"
-            placeholder="Confirm password"
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full mt-2"
-          >
-            {loading ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-500 dark:text-slate-400 text-sm mt-4">
+    <AuthLayout
+      title="Create account"
+      subtitle="Join WhatsMyGrade to track your grades"
+      footer={
+        <p className="mt-4 text-center text-sm text-gray-500 dark:text-slate-400">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+          <Link
+            to="/login"
+            className="rounded font-medium text-blue-600 hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+          >
             Sign in
           </Link>
         </p>
-      </div>
-    </div>
+      }
+    >
+      {error && (
+        <div
+          role="alert"
+          className="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+        >
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} noValidate>
+        <FormInput
+          label="Full Name"
+          value={formData.name}
+          onChange={(value) => setFormData({ ...formData, name: String(value) })}
+          required
+          autoComplete="name"
+          placeholder="John Doe"
+        />
+
+        <FormInput
+          label="Email"
+          type="email"
+          value={formData.email}
+          onChange={(value) => setFormData({ ...formData, email: String(value) })}
+          required
+          autoComplete="email"
+          placeholder="you@example.com"
+        />
+
+        <FormInput
+          label="Password"
+          type="password"
+          value={formData.password}
+          onChange={(value) => setFormData({ ...formData, password: String(value) })}
+          required
+          autoComplete="new-password"
+          placeholder="Enter your password"
+        />
+
+        <FormInput
+          label="Confirm Password"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={(value) => setFormData({ ...formData, confirmPassword: String(value) })}
+          required
+          autoComplete="new-password"
+          placeholder="Confirm password"
+        />
+
+        <button type="submit" disabled={loading} className="btn-primary mt-2 w-full">
+          {loading ? 'Creating account...' : 'Create Account'}
+        </button>
+      </form>
+    </AuthLayout>
   );
 };
