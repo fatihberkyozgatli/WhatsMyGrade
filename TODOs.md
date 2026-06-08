@@ -77,9 +77,17 @@
 
 ## UI / UX Polish
 
+- [ ] Redesign login/sign-up page — half-and-half layout with a visual or a left sidebar
+- [ ] Fix Score button — the score text gets cut off / isn't fully visible
 - [ ] Loading skeletons instead of spinners while fetching
 - [ ] Mobile responsive audit and fixes
 - [ ] Toast notifications for save/delete/error actions
+
+---
+
+## Integrations
+
+- [ ] Look into Canvas API — could it auto-pull course grades/components? (needs research, not sure yet if feasible)
 
 ---
 
