@@ -146,7 +146,8 @@ export const ScenarioModal: React.FC<ScenarioModalProps> = ({ isOpen, onClose, c
     <button
       type="button"
       onClick={() => setMode(m)}
-      aria-pressed={mode === m}
+      role="radio"
+      aria-checked={mode === m}
       className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
         mode === m
           ? 'bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400'
@@ -158,10 +159,7 @@ export const ScenarioModal: React.FC<ScenarioModalProps> = ({ isOpen, onClose, c
   );
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div
         ref={dialogRef}
         role="dialog"
@@ -193,7 +191,7 @@ export const ScenarioModal: React.FC<ScenarioModalProps> = ({ isOpen, onClose, c
 
           <div
             className="mt-4 flex w-full sm:w-72 p-1 bg-gray-100 dark:bg-slate-900 rounded-lg"
-            role="group"
+            role="radiogroup"
             aria-label="Scenario mode"
           >
             {segButton('ungraded', 'Test Ungraded')}

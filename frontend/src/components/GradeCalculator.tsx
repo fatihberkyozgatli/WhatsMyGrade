@@ -1,12 +1,15 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { GradeCalculationResult } from '../types';
 import { GradeGauge, GradedSplitBar, LetterRequirementBars } from './GradeCharts';
+import { formatGradePercent } from '../utils/formatters';
 
 interface GradeCalculatorProps {
   result: GradeCalculationResult;
+  compact?: boolean;
 }
 
-export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result }) => {
+export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result, compact = false }) => {
   if (!result) {
     return (
       <div className="card text-center py-8">
@@ -46,15 +49,26 @@ export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result }) => {
   };
 
   return (
-    <div className="card">
+    <motion.div 
+      className="card"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
+    >
       {result.weightWarning && (
         <div role="alert" className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm dark:bg-yellow-950 dark:border-yellow-900 dark:text-yellow-300">
           {result.weightWarning}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex flex-col items-center dark:bg-blue-950 dark:border-blue-900">
+      <div className={compact ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-6 mb-6' : 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'}>
+        <motion.div 
+          className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex flex-col items-center dark:bg-blue-950 dark:border-blue-900"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1, delay: 0.1 }}
+        >
           <p className="text-xs text-blue-700 font-medium uppercase tracking-wide mb-2 self-start dark:text-blue-300">Current Grade</p>
           <GradeGauge value={result.currentGrade} />
           <span
@@ -62,13 +76,18 @@ export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result }) => {
           >
             {result.status}
           </span>
-        </div>
+        </motion.div>
 
-        <div className="flex flex-col gap-4">
+        <motion.div 
+          className="flex flex-col gap-4"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1, delay: 0.2 }}
+        >
           <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg dark:bg-slate-700/50 dark:border-slate-700">
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2 dark:text-slate-400">Maximum Obtainable</p>
             <p className="text-3xl font-semibold text-gray-700 tabular-nums dark:text-slate-200">
-              {result.projectedFinalGrade !== null ? `${result.projectedFinalGrade.toFixed(2)}%` : 'N/A'}
+              {formatGradePercent(result.projectedFinalGrade, 2)}
             </p>
             <p className="text-xs text-gray-400 mt-1 dark:text-slate-500">if you ace all remaining work</p>
           </div>
@@ -77,13 +96,17 @@ export const GradeCalculator: React.FC<GradeCalculatorProps> = ({ result }) => {
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-3 dark:text-slate-400">Course Completion</p>
             <GradedSplitBar graded={result.percentageGraded} remaining={result.percentageRemaining} />
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      <div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1, delay: 0.3 }}
+      >
         <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide dark:text-slate-100">Score Needed Per Letter Grade</h3>
         <LetterRequirementBars requirements={result.requiredByLetterGrade} />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

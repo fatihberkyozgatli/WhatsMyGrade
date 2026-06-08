@@ -2,6 +2,7 @@ import React from 'react';
 import { Course, GradeCalculationResult } from '../types';
 import { Link } from 'react-router-dom';
 import { XIcon } from './icons';
+import { formatGradePercent, formatGrade } from '../utils/formatters';
 
 interface CourseCardProps {
   course: Course;
@@ -88,17 +89,17 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
           <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
             <div className="mb-4">
               <p className="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide dark:text-slate-400">Current Grade</p>
-              <div className="text-3xl font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{displayGrade.toFixed(2)}%</div>
+              <div className="text-3xl font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{formatGradePercent(displayGrade, 2)}</div>
             </div>
 
             {gradeData && (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm">
                   <span className="text-gray-600 dark:text-slate-400">Graded:</span>
-                  <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{gradeData.percentageGraded.toFixed(0)}%</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{formatGrade(gradeData.percentageGraded, 0)}%</span>
                   <span className="text-gray-400 dark:text-slate-600">|</span>
                   <span className="text-gray-600 dark:text-slate-400">Ungraded:</span>
-                  <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{gradeData.percentageRemaining.toFixed(0)}%</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100 tabular-nums">{formatGrade(gradeData.percentageRemaining, 0)}%</span>
                 </div>
 
                 <div className="text-sm pt-2 border-t border-gray-100 dark:border-slate-700 min-h-[3rem]">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { formatGradePercent, formatGrade } from '../utils/formatters';
 
 export const GradeGauge: React.FC<{ value: number | null; label?: string }> = ({ value, label = 'Current grade' }) => {
   const reduce = useReducedMotion();
@@ -25,7 +26,7 @@ export const GradeGauge: React.FC<{ value: number | null; label?: string }> = ({
       viewBox="0 0 200 116"
       className="w-full max-w-[240px]"
       role="img"
-      aria-label={`${label} ${hasValue ? `${v.toFixed(2)} percent` : 'not available'}`}
+      aria-label={`${label} ${hasValue ? `${formatGrade(v, 2)} percent` : 'not available'}`}
     >
       <path
         d={track}
@@ -56,7 +57,7 @@ export const GradeGauge: React.FC<{ value: number | null; label?: string }> = ({
         fontWeight="700"
         style={{ fontVariantNumeric: 'tabular-nums' }}
       >
-        {hasValue ? `${v.toFixed(1)}%` : 'N/A'}
+        {formatGradePercent(hasValue ? v : null, 1)}
       </text>
     </svg>
   );
@@ -141,7 +142,7 @@ export const LetterRequirementBars: React.FC<{ requirements: { [key: string]: st
           return (
             <li key={letter} className="flex items-center gap-3">
               <span className="w-5 shrink-0 text-center font-semibold text-gray-900 dark:text-slate-100">{letter}</span>
-              <div className="relative flex-1 h-2.5 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">
+              <div aria-hidden="true" className="relative flex-1 h-2.5 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">
                 <div className={`absolute inset-y-0 left-0 rounded-full ${barColor}`} style={{ width: `${fill}%` }} />
               </div>
               <span className={`w-28 shrink-0 text-right text-xs font-medium tabular-nums ${labelColor}`}>

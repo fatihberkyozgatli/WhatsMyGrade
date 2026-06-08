@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutGroup, motion } from 'framer-motion';
+import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { Course, GradeComponent, GradeCalculationResult, GradeScale, DEFAULT_GRADE_SCALE } from '../types';
@@ -22,6 +22,7 @@ const buildScale = (t: { A: number; B: number; C: number; D: number }): GradeSca
 export const CourseDetailPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
+  const reduce = useReducedMotion();
 
   const [course, setCourse] = useState<Course | null>(null);
   const [components, setComponents] = useState<GradeComponent[]>([]);
@@ -40,6 +41,7 @@ export const CourseDetailPage: React.FC = () => {
   const [scaleError, setScaleError] = useState('');
   const [scenarioOpen, setScenarioOpen] = useState(false);
   const [coachOpen, setCoachOpen] = useState(false);
+  const [splitView, setSplitView] = useState(() => localStorage.getItem('wmg-course-layout') === 'split');
 
   const [newComponent, setNewComponent] = useState({
     name: '',
@@ -85,6 +87,15 @@ export const CourseDetailPage: React.FC = () => {
       cancelled = true;
     };
   }, [courseId]);
+
+  // Listen for layout toggle from Header
+  useEffect(() => {
+    const handleLayoutToggle = (e: any) => {
+      setSplitView(e.detail.view === 'split');
+    };
+    window.addEventListener('wmg-layout-toggle', handleLayoutToggle);
+    return () => window.removeEventListener('wmg-layout-toggle', handleLayoutToggle);
+  }, []);
 
   const handleAddComponent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,13 +330,29 @@ export const CourseDetailPage: React.FC = () => {
           </LayoutGroup>
         )}
 
-        {calculation && (
-          <div className="mb-8">
-            <GradeCalculator result={calculation} />
-          </div>
-        )}
+        <motion.div 
+          layout={!reduce}
+          layoutId="course-layout-container"
+          transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
+          className={splitView ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : ''}
+        >
+          {calculation && (
+            <motion.div 
+              layout={!reduce}
+              layoutId="calculator-section"
+              transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
+              className={splitView ? 'mb-8 lg:mb-0 lg:sticky lg:top-6' : 'mb-8'}
+            >
+              <GradeCalculator result={calculation} compact={splitView} />
+            </motion.div>
+          )}
 
-        <div className="card">
+          <motion.div 
+            layout={!reduce}
+            layoutId="components-section"
+            transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
+            className="card"
+          >
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Grade Components</h2>
             <button
@@ -413,7 +440,7 @@ export const CourseDetailPage: React.FC = () => {
                               e.currentTarget.blur();
                             }
                           }}
-                          className="w-16 px-2 py-1 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
+                          className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
                         />
                         <span className="text-xs text-gray-500 dark:text-slate-400">%</span>
 
@@ -457,7 +484,7 @@ export const CourseDetailPage: React.FC = () => {
                           handleUpdateComponent(comp.id, true, parsed);
                           e.currentTarget.value = '';
                         }}
-                        className="w-16 px-2 py-1 border border-gray-300 rounded text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
+                        className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
                       />
                     )}
 
@@ -473,7 +500,8 @@ export const CourseDetailPage: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
+        </motion.div>
       </div>
 
       <ConfirmModal
