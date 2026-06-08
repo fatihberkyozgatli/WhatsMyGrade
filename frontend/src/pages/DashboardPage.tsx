@@ -5,6 +5,7 @@ import { Course, GradeCalculationResult } from '../types';
 import { CourseCard } from '../components/CourseCard';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { AddCourseButton } from '../components/AddCourseButton';
+import { useToast } from '../ToastContext';
 
 export const DashboardPage: React.FC = () => {
   const reduce = useReducedMotion();
@@ -19,6 +20,7 @@ export const DashboardPage: React.FC = () => {
         show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' as const } },
       };
 
+  const toast = useToast();
   const [courses, setCourses] = useState<Course[]>([]);
   const [gradeData, setGradeData] = useState<{ [key: number]: GradeCalculationResult }>({});
   const [loading, setLoading] = useState(true);
@@ -64,6 +66,7 @@ export const DashboardPage: React.FC = () => {
       await api.delete(`/courses/${deleteModal.courseId}`);
       setCourses(prev => prev.filter(c => c.id !== deleteModal.courseId));
       setDeleteModal({ isOpen: false });
+      toast.destructive('Course deleted');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to delete course');
       setDeleteModal({ isOpen: false });

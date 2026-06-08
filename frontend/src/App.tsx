@@ -9,6 +9,7 @@ import { AddCoursePage } from './pages/AddCoursePage';
 import { CourseDetailPage } from './pages/CourseDetailPage';
 import { UploadSyllabusPage } from './pages/UploadSyllabusPage';
 import { AuthProvider, useAuth } from './AuthContext';
+import { ToastProvider } from './ToastContext';
 
 function AppShell() {
   const { isAuthenticated, logout } = useAuth();
@@ -79,7 +80,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </AuthProvider>
   );
 }

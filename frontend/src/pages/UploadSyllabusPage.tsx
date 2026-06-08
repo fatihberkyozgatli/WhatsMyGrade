@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
 import { ArrowLeftIcon, XIcon } from '../components/icons';
+import { useToast } from '../ToastContext';
 
 type Phase = 'upload' | 'review';
 
@@ -11,6 +12,7 @@ type ScaleDraft = { A: number | ''; B: number | ''; C: number | ''; D: number | 
 
 export const UploadSyllabusPage: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [phase, setPhase] = useState<Phase>('upload');
   const [file, setFile] = useState<File | null>(null);
@@ -126,6 +128,7 @@ export const UploadSyllabusPage: React.FC = () => {
         components: components.map((c) => ({ name: c.name.trim(), weight: Number(c.weight) })),
         gradingScale: { A: Number(A), B: Number(B), C: Number(C), D: Number(D) },
       });
+      toast.success('Course created');
       navigate(`/course/${res.data.id}`);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to create the course');

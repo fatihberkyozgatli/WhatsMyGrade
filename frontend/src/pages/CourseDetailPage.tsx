@@ -10,6 +10,7 @@ import { EditScaleModal } from '../components/EditScaleModal';
 import { ScenarioModal } from '../components/ScenarioModal';
 import { XIcon, ArrowLeftIcon } from '../components/icons';
 import { GradeCoach } from '../components/GradeCoach';
+import { useToast } from '../ToastContext';
 
 const buildScale = (t: { A: number; B: number; C: number; D: number }): GradeScale => ({
   A: { min: t.A, max: 100 },
@@ -23,6 +24,7 @@ export const CourseDetailPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const reduce = useReducedMotion();
+  const toast = useToast();
 
   const [course, setCourse] = useState<Course | null>(null);
   const [components, setComponents] = useState<GradeComponent[]>([]);
@@ -125,6 +127,7 @@ export const CourseDetailPage: React.FC = () => {
       setNewComponent({ name: '', weight: 0 });
       setShowAddComponent(false);
       setError('');
+      toast.success('Component added');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to add component');
       console.error('Add component error:', err);
@@ -162,6 +165,25 @@ export const CourseDetailPage: React.FC = () => {
     setDeleteModal({ isOpen: true, type: 'course', targetId: course.id, targetName: course.name });
   };
 
+  const restoreComponent = async (comp: GradeComponent) => {
+    try {
+      await api.post('/components', {
+        courseId: parseInt(courseId!),
+        name: comp.name,
+        weight: Number(comp.weight),
+        graded: comp.graded,
+        grade: comp.grade,
+      });
+      const componentsRes = await api.get(`/components/${courseId}`);
+      setComponents(componentsRes.data);
+      const calcRes = await api.get(`/calculate/${courseId}`);
+      setCalculation(calcRes.data);
+      toast.success('Component restored');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to restore component');
+    }
+  };
+
   const confirmDelete = async () => {
     if (!deleteModal.targetId) return;
 
@@ -171,8 +193,10 @@ export const CourseDetailPage: React.FC = () => {
       if (deleteModal.type === 'course') {
         await api.delete(`/courses/${deleteModal.targetId}`);
         setDeleteModal({ isOpen: false });
+        toast.destructive('Course deleted');
         navigate('/dashboard');
       } else if (deleteModal.type === 'component') {
+        const deleted = components.find((c) => c.id === deleteModal.targetId);
         await api.delete(`/components/${deleteModal.targetId}`);
 
         try {
@@ -190,6 +214,11 @@ export const CourseDetailPage: React.FC = () => {
         }
 
         setDeleteModal({ isOpen: false });
+        if (deleted) {
+          toast.destructive('Component deleted', {
+            action: { label: 'Undo', onClick: () => restoreComponent(deleted) },
+          });
+        }
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to delete');
@@ -236,6 +265,7 @@ export const CourseDetailPage: React.FC = () => {
       }
 
       setScaleModalOpen(false);
+      toast.success('Grading scale updated');
     } catch (err: any) {
       setScaleError(err.response?.data?.error || 'Failed to save grading scale');
     } finally {
@@ -331,14 +361,14 @@ export const CourseDetailPage: React.FC = () => {
         )}
 
         <motion.div 
-          layout={!reduce}
+          layout={reduce ? false : 'position'}
           layoutId="course-layout-container"
           transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
           className={splitActive ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : ''}
         >
           {calculation && (
             <motion.div 
-              layout={!reduce}
+              layout={reduce ? false : 'position'}
               layoutId="calculator-section"
               transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
               className={splitActive ? 'mb-8 lg:mb-0 lg:sticky lg:top-6' : 'mb-8'}
@@ -348,7 +378,7 @@ export const CourseDetailPage: React.FC = () => {
           )}
 
           <motion.div 
-            layout={!reduce}
+            layout={reduce ? false : 'position'}
             layoutId="components-section"
             transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
             className="card"

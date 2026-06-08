@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
 import { ArrowLeftIcon } from '../components/icons';
+import { useToast } from '../ToastContext';
 
 export const AddCoursePage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -25,6 +26,7 @@ export const AddCoursePage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +58,7 @@ export const AddCoursePage: React.FC = () => {
         ...formData,
         gradingScale,
       });
+      toast.success('Course created');
       navigate(`/course/${response.data.id}`);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to create course');

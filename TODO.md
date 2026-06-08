@@ -84,13 +84,8 @@
 - [ ] GradeGauge color zones should follow the course's custom grade scale (currently hard-coded 90/80/70)
 - [ ] Loading skeletons instead of spinners while fetching
 - [ ] Mobile responsive audit and fixes
-- [ ] Toast notifications for save/delete/error actions
-
----
-
-## Integrations
-
-- [ ] Look into Canvas API — could it auto-pull course grades/components? (needs research, not sure yet if feasible)
+- [x] Toast notifications (success + destructive with Undo) — course/component create/delete, scale save
+- [ ] Help / info button in the navbar — context-aware popup (different content for dashboard, course pages, landing, login/signup)
 
 ---
 
@@ -99,3 +94,10 @@
 - [ ] CSV/PDF export of course grades
 - [ ] Optimistic UI for grade updates (no full reload after edits)
 - [ ] Deploy the app (hosting + CI/CD)
+
+---
+
+## Legal
+
+- [ ] Terms of Service / user agreement (page or modal, linked from signup and footer)
+- [ ] Disclaimer — grades are estimates, not official records
