@@ -92,8 +92,9 @@ export const UploadSyllabusPage: React.FC = () => {
   const claimsMissing = (w: string) =>
     /(not (provided|specified|given|listed|available|included|present|found)|missing|absent|unavailable|n\/?a|could not be|unable to)/i.test(w);
   const reviewWarnings = [
-    ...(components.length === 0 ? ['No graded components found. Add them below.'] : []),
-    ...(!scaleProvided ? ['No grading scale found. Using the default 90/80/70/60.'] : []),
+    ...(components.length === 0 ? ['No graded components were found in this syllabus. Add them manually below.'] : []),
+    ...(!scaleProvided ? ['No grading scale found. Using the default 90 / 80 / 70 / 60 thresholds.'] : []),
+    ...(components.length > 0 && weightOff ? [`Component weights sum to ${Math.round(weightSum * 100) / 100}% — adjust them to reach 100%.`] : []),
     ...warnings.filter((w) => !claimsMissing(w)),
   ];
 

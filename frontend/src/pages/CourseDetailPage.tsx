@@ -8,6 +8,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 import { EditScaleModal } from '../components/EditScaleModal';
 import { ScenarioModal } from '../components/ScenarioModal';
 import { XIcon, ArrowLeftIcon } from '../components/icons';
+import { GradeCoach } from '../components/GradeCoach';
 
 const buildScale = (t: { A: number; B: number; C: number; D: number }): GradeScale => ({
   A: { min: t.A, max: 100 },
@@ -37,6 +38,7 @@ export const CourseDetailPage: React.FC = () => {
   const [scaleSaving, setScaleSaving] = useState(false);
   const [scaleError, setScaleError] = useState('');
   const [scenarioOpen, setScenarioOpen] = useState(false);
+  const [coachOpen, setCoachOpen] = useState(false);
 
   const [newComponent, setNewComponent] = useState({
     name: '',
@@ -263,7 +265,11 @@ export const CourseDetailPage: React.FC = () => {
 
   return (
     <div className="page-container">
-      <div className="content-wrapper max-w-4xl">
+      <div
+        className={`content-wrapper max-w-4xl transition-[padding-right] duration-300 ease-out ${
+          coachOpen ? 'lg:pr-[476px]' : ''
+        }`}
+      >
         <Link
           to="/dashboard"
           className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium mb-6 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
@@ -278,14 +284,25 @@ export const CourseDetailPage: React.FC = () => {
         )}
 
         {course && (
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
-            <div className="flex-1 min-w-0">
+          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between transition-all duration-300">
+            <div className="min-w-0 flex-1">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 truncate" title={course.name}>{course.name}</h1>
               {course.semester && <p className="text-sm text-gray-500 mt-2 dark:text-slate-400">{course.semester}</p>}
             </div>
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0 transition-all duration-300">
+              <button
+                onClick={() => setCoachOpen(o => !o)}
+                aria-expanded={coachOpen}
+                aria-controls="grade-coach-drawer"
+                className={`text-sm flex items-center gap-1.5 ${coachOpen ? 'btn-secondary' : 'btn-primary'}`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="w-4 h-4">
+                  <path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z" />
+                </svg>
+                Grade Coach
+              </button>
               {components.length > 0 && (
-                <button onClick={() => setScenarioOpen(true)} className="btn-primary text-sm">
+                <button onClick={() => setScenarioOpen(true)} className="btn-secondary text-sm">
                   Run Scenario
                 </button>
               )}
@@ -486,6 +503,14 @@ export const CourseDetailPage: React.FC = () => {
         onClose={() => setScenarioOpen(false)}
         courseId={courseId!}
         components={components}
+      />
+
+      <GradeCoach
+        isOpen={coachOpen}
+        onClose={() => setCoachOpen(false)}
+        courseId={courseId!}
+        course={course}
+        calculation={calculation}
       />
     </div>
   );
