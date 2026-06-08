@@ -25,7 +25,6 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
   const headerRef = useRef<HTMLElement>(null);
   const [theme, toggleTheme] = useTheme();
 
-  // Detect if we're on a course detail page and get layout preference
   const isOnCourseDetail = location.pathname.startsWith('/course/');
   const splitView = isOnCourseDetail && localStorage.getItem('wmg-course-layout') === 'split';
 
@@ -33,9 +32,18 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
     const current = localStorage.getItem('wmg-course-layout') === 'split';
     const next = current ? 'stacked' : 'split';
     localStorage.setItem('wmg-course-layout', next);
-    // Dispatch custom event for listeners
     window.dispatchEvent(new CustomEvent('wmg-layout-toggle', { detail: { view: next } }));
   };
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () => document.documentElement.style.setProperty('--app-header-h', `${el.offsetHeight}px`);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;

@@ -42,6 +42,7 @@ export const CourseDetailPage: React.FC = () => {
   const [scenarioOpen, setScenarioOpen] = useState(false);
   const [coachOpen, setCoachOpen] = useState(false);
   const [splitView, setSplitView] = useState(() => localStorage.getItem('wmg-course-layout') === 'split');
+  const splitActive = splitView && !coachOpen;
 
   const [newComponent, setNewComponent] = useState({
     name: '',
@@ -88,10 +89,9 @@ export const CourseDetailPage: React.FC = () => {
     };
   }, [courseId]);
 
-  // Listen for layout toggle from Header
   useEffect(() => {
-    const handleLayoutToggle = (e: any) => {
-      setSplitView(e.detail.view === 'split');
+    const handleLayoutToggle = (e: Event) => {
+      setSplitView((e as CustomEvent<{ view: string }>).detail.view === 'split');
     };
     window.addEventListener('wmg-layout-toggle', handleLayoutToggle);
     return () => window.removeEventListener('wmg-layout-toggle', handleLayoutToggle);
@@ -334,16 +334,16 @@ export const CourseDetailPage: React.FC = () => {
           layout={!reduce}
           layoutId="course-layout-container"
           transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
-          className={splitView ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : ''}
+          className={splitActive ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : ''}
         >
           {calculation && (
             <motion.div 
               layout={!reduce}
               layoutId="calculator-section"
               transition={{ type: "spring", stiffness: 350, damping: 40, mass: 1 }}
-              className={splitView ? 'mb-8 lg:mb-0 lg:sticky lg:top-6' : 'mb-8'}
+              className={splitActive ? 'mb-8 lg:mb-0 lg:sticky lg:top-6' : 'mb-8'}
             >
-              <GradeCalculator result={calculation} compact={splitView} />
+              <GradeCalculator result={calculation} compact={splitActive} />
             </motion.div>
           )}
 

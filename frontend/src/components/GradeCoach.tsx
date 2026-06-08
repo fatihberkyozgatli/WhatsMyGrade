@@ -209,7 +209,7 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.22, ease: 'easeOut' }}
             onAnimationComplete={() => inputRef.current?.focus()}
-            className="fixed right-0 top-0 h-full w-full max-w-[460px] z-50 flex flex-col bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-slate-700 shadow-2xl focus:outline-none"
+            className="fixed right-0 top-0 h-full lg:top-[var(--app-header-h,68px)] lg:bottom-0 lg:h-auto w-full max-w-[460px] z-50 flex flex-col bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-slate-700 shadow-2xl focus:outline-none"
           >
             <div className="shrink-0 border-b border-gray-100 dark:border-slate-800">
               <div className="flex items-center justify-between px-5 pt-5 pb-3">
