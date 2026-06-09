@@ -30,6 +30,7 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+Screenshot*.png
 
 # Logs
 logs/

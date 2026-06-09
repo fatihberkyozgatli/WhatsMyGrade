@@ -39,6 +39,10 @@ app.use('/api/calculate', calculateRoutes);
 app.use('/api/coach', coachRoutes);
 app.use('/api/grade-entry', gradeEntryRoutes);
 
+app.get('/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok' });
+});
+
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Not found' });
 });

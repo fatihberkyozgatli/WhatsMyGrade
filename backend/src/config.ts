@@ -27,4 +27,5 @@ export const config = {
   cors_origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   trust_proxy: parseTrustProxy(process.env.TRUST_PROXY),
   openai_api_key: process.env.OPENAI_API_KEY || '',
+  database_ssl: process.env.DATABASE_SSL === 'true',
 };
