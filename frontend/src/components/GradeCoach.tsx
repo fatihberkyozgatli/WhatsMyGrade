@@ -10,6 +10,7 @@ interface Props {
   courseId: string;
   course: Course;
   calculation: GradeCalculationResult | null;
+  onDataChanged?: () => void;
 }
 
 interface Message {
@@ -21,9 +22,9 @@ interface Message {
 
 const QUICK_PROMPTS = [
   'Can I still get an A?',
-  'Which component matters most?',
+  'Add my components for me',
   'What if I score 80% on everything left?',
-  'What do I need to keep my grade?',
+  'Which component matters most?',
 ];
 
 function statusClasses(s: string) {
@@ -133,7 +134,7 @@ function renderContent(text: string) {
   );
 }
 
-export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course, calculation }) => {
+export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course, calculation, onDataChanged }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -147,23 +148,29 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
 
   const insights = useMemo(() => (calculation ? buildInsights(calculation) : []), [calculation]);
 
+  const buildWelcome = (): Message => {
+    const grade = calculation?.currentGrade;
+    const remaining = calculation?.percentageRemaining ?? 0;
+    return {
+      id: 'welcome',
+      role: 'assistant',
+      synthetic: true,
+      content:
+        grade !== null && grade !== undefined
+          ? `You've secured **${grade.toFixed(1)}%** so far with **${remaining}%** still on the table — what do you want to figure out?`
+          : `No grades entered yet in **${course.name}**. Tell me your components and I can add them for you, or set them up yourself.`,
+    };
+  };
+
+  const startNewChat = () => {
+    setMessages([buildWelcome()]);
+    setInput('');
+    setError('');
+  };
+
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      const grade = calculation?.currentGrade;
-      const remaining = calculation?.percentageRemaining ?? 0;
-      setMessages([{
-        id: 'welcome',
-        role: 'assistant',
-        synthetic: true,
-        content: grade !== null && grade !== undefined
-          ? `You've secured **${grade.toFixed(1)}%** so far with **${remaining}%** still on the table — what do you want to figure out?`
-          : `No grades entered yet in **${course.name}**. Add your components and I can start planning with you.`,
-      }]);
-    }
-    if (!isOpen) {
-      setMessages([]);
-      setInput('');
-      setError('');
+      setMessages([buildWelcome()]);
     }
   }, [isOpen]);
 
@@ -233,6 +240,7 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
         role: 'assistant',
         content: res.data.reply,
       }]);
+      if (res.data.dataChanged) onDataChanged?.();
     } catch (err: any) {
       setError(err.response?.data?.error ?? 'Something went wrong. Please try again.');
     } finally {
@@ -293,13 +301,24 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={onClose}
-                  aria-label="Close Grade Coach"
-                  className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                >
-                  <XIcon className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-1">
+                  {messages.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={startNewChat}
+                      className="text-xs font-medium px-2.5 py-1.5 rounded-md text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    >
+                      New chat
+                    </button>
+                  )}
+                  <button
+                    onClick={onClose}
+                    aria-label="Close Grade Coach"
+                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  >
+                    <XIcon className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {calculation && (

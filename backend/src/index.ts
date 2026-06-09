@@ -8,6 +8,7 @@ import componentRoutes from './routes/components';
 import gradeScaleRoutes from './routes/gradeScale';
 import calculateRoutes from './routes/calculate';
 import coachRoutes from './routes/coach';
+import gradeEntryRoutes from './routes/gradeEntry';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/components', componentRoutes);
 app.use('/api/grade-scale', gradeScaleRoutes);
 app.use('/api/calculate', calculateRoutes);
 app.use('/api/coach', coachRoutes);
+app.use('/api/grade-entry', gradeEntryRoutes);
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Not found' });

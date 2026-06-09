@@ -15,10 +15,10 @@ const getHelpContent = (pathname: string): HelpContent => {
       title: 'Working on a course',
       intro: 'Everything you do here updates your projected grade instantly.',
       tips: [
-        'Add components with their weights, then type a score to mark one graded.',
-        'Run Scenario to test "what if" grades on what is left.',
-        'Ask Grade Coach for advice on what you need.',
-        'Edit Grading Scale to set your own letter cutoffs.',
+        'Add components manually, or type a grade in plain English in the "Log a grade" box.',
+        'Ask Grade Coach what you need for a grade, whether an A is still possible, or which component matters most.',
+        'Grade Coach can also set up components, change weights, remove them, and log your grades from the chat.',
+        'Run Scenario to test hypothetical grades, or Edit Grading Scale to set your own letter cutoffs.',
       ],
     };
   }

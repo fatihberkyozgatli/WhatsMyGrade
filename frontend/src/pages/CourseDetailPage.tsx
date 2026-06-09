@@ -11,6 +11,7 @@ import { ScenarioModal } from '../components/ScenarioModal';
 import { XIcon, ArrowLeftIcon } from '../components/icons';
 import { GradeCoach } from '../components/GradeCoach';
 import { CourseDetailSkeleton } from '../components/Skeletons';
+import { QuickGradeEntry } from '../components/QuickGradeEntry';
 import { useToast } from '../ToastContext';
 
 const buildScale = (t: { A: number; B: number; C: number; D: number }): GradeScale => ({
@@ -258,6 +259,20 @@ export const CourseDetailPage: React.FC = () => {
     setScaleError('');
   };
 
+  const refreshData = async () => {
+    if (!courseId) return;
+    try {
+      const [componentsRes, calcRes] = await Promise.all([
+        api.get(`/components/${courseId}`),
+        api.get(`/calculate/${courseId}`),
+      ]);
+      setComponents(componentsRes.data);
+      setCalculation(calcRes.data);
+    } catch (err) {
+      console.error('Failed to refresh course data:', err);
+    }
+  };
+
   const handleSaveScale = async (thresholds: { A: number; B: number; C: number; D: number }) => {
     if (!courseId) return;
     setScaleSaving(true);
@@ -394,6 +409,13 @@ export const CourseDetailPage: React.FC = () => {
               {showAddComponent ? 'Cancel' : 'Add Component'}
             </button>
           </div>
+
+          {components.length > 0 && (
+            <QuickGradeEntry
+              courseId={courseId!}
+              onApply={(componentId, score) => handleUpdateComponent(componentId, true, score)}
+            />
+          )}
 
           {showAddComponent && (
             <form onSubmit={handleAddComponent} noValidate className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg dark:bg-slate-700/40 dark:border-slate-700">
@@ -582,6 +604,7 @@ export const CourseDetailPage: React.FC = () => {
         courseId={courseId!}
         course={course}
         calculation={calculation}
+        onDataChanged={refreshData}
       />
     </div>
   );

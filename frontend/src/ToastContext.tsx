@@ -74,10 +74,10 @@ const ToastCard: React.FC<{ toast: ToastItem; onDismiss: (id: number) => void }>
       onMouseEnter={stop}
       onMouseLeave={start}
       role={toast.variant === 'error' ? 'alert' : 'status'}
-      className={`pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border ${border} bg-white p-3.5 shadow-lg dark:bg-slate-800`}
+      className={`pointer-events-auto flex max-w-sm items-start gap-3 rounded-lg border ${border} bg-white p-3.5 shadow-lg dark:bg-slate-800`}
     >
       <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${color}`} />
-      <p className="flex-1 text-sm text-gray-800 dark:text-slate-100">{toast.message}</p>
+      <p className="text-sm text-gray-800 dark:text-slate-100">{toast.message}</p>
       {toast.action && (
         <button
           onClick={() => {

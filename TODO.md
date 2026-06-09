@@ -48,7 +48,7 @@
 “Needed for A: 50%”
 “Risk level: Low”
 
-### 3. AI Study Advisor
+### 3. AI Study Advisor _(later — post v1.0)_
 - [ ] Add "Get Study Plan" button on CourseDetailPage
 - [ ] Send current grade, components, weights, and days until end of semester to AI
 - [ ] Display personalized day-by-day study recommendations
@@ -58,7 +58,7 @@
 - [ ] Chat input on CourseDetailPage: "I got an 85 on my midterm"
 - [ ] AI matches to existing component, shows preview, saves on confirm
 
-### 5. Grade Trend Insights
+### 5. Grade Trend Insights _(later — post v1.0)_
 - [ ] On-demand AI digest per course — grade trajectory, strongest/weakest areas, actionable suggestions
 - [ ] Dismissable insight card on DashboardPage and CourseDetailPage
 

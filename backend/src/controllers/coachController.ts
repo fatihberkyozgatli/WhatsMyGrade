@@ -206,6 +206,152 @@ async function toolCompareComponentImpact(courseId: string) {
   };
 }
 
+async function verifyCourseOwnership(courseId: string, userId: number) {
+  const res = await pool.query('SELECT id FROM courses WHERE id = $1 AND user_id = $2', [courseId, userId]);
+  return res.rows.length > 0;
+}
+
+async function toolAddComponents(
+  courseId: string,
+  userId: number,
+  items: { name?: unknown; weight?: unknown }[]
+) {
+  if (!(await verifyCourseOwnership(courseId, userId))) {
+    return { error: 'Not authorized to modify this course' };
+  }
+  if (!Array.isArray(items) || items.length === 0) return { error: 'No components provided' };
+
+  const existingRes = await pool.query('SELECT name FROM grade_components WHERE course_id = $1', [courseId]);
+  const existing = new Set(existingRes.rows.map((r) => String(r.name).toLowerCase()));
+
+  const added: { name: string; weight: number }[] = [];
+  const skipped: string[] = [];
+  for (const item of items) {
+    const name = typeof item?.name === 'string' ? item.name.trim() : '';
+    const weight = Number(item?.weight);
+    if (!name || !Number.isFinite(weight) || weight <= 0 || weight > 100) {
+      return { error: 'Each component needs a name and a weight between 0 and 100.' };
+    }
+    if (existing.has(name.toLowerCase())) {
+      skipped.push(name);
+      continue;
+    }
+    const inserted = await pool.query(
+      'INSERT INTO grade_components (course_id, name, weight, graded, grade) VALUES ($1, $2, $3, false, null) RETURNING name, weight',
+      [courseId, name, weight]
+    );
+    existing.add(name.toLowerCase());
+    added.push({ name: inserted.rows[0].name, weight: Number(inserted.rows[0].weight) });
+  }
+
+  return { added, skipped };
+}
+
+async function toolUpdateComponents(
+  courseId: string,
+  userId: number,
+  updates: { name?: unknown; weight?: unknown; newName?: unknown }[]
+) {
+  if (!(await verifyCourseOwnership(courseId, userId))) {
+    return { error: 'Not authorized to modify this course' };
+  }
+  if (!Array.isArray(updates) || updates.length === 0) return { error: 'No updates provided' };
+
+  const updated: string[] = [];
+  const notFound: string[] = [];
+  for (const u of updates) {
+    const name = typeof u?.name === 'string' ? u.name.trim() : '';
+    if (!name) return { error: 'Each update needs the component name.' };
+
+    const matches = await pool.query(
+      'SELECT id FROM grade_components WHERE course_id = $1 AND LOWER(name) = LOWER($2)',
+      [courseId, name]
+    );
+    if (matches.rows.length === 0) {
+      notFound.push(name);
+      continue;
+    }
+
+    const sets: string[] = [];
+    const vals: unknown[] = [];
+    if (u.weight !== undefined && u.weight !== null) {
+      const weight = Number(u.weight);
+      if (!Number.isFinite(weight) || weight <= 0 || weight > 100) {
+        return { error: `Weight for ${name} must be between 0 and 100.` };
+      }
+      sets.push(`weight = $${sets.length + 1}`);
+      vals.push(weight);
+    }
+    if (typeof u.newName === 'string' && u.newName.trim()) {
+      sets.push(`name = $${sets.length + 1}`);
+      vals.push(u.newName.trim());
+    }
+    if (sets.length === 0) continue;
+
+    for (const row of matches.rows) {
+      await pool.query(
+        `UPDATE grade_components SET ${sets.join(', ')} WHERE id = $${sets.length + 1} AND course_id = $${sets.length + 2}`,
+        [...vals, row.id, courseId]
+      );
+    }
+    updated.push(name);
+  }
+
+  return { updated, notFound };
+}
+
+async function toolRemoveComponents(courseId: string, userId: number, names: unknown[]) {
+  if (!(await verifyCourseOwnership(courseId, userId))) {
+    return { error: 'Not authorized to modify this course' };
+  }
+  if (!Array.isArray(names) || names.length === 0) return { error: 'No components specified' };
+
+  const removed: string[] = [];
+  const notFound: string[] = [];
+  for (const raw of names) {
+    const name = typeof raw === 'string' ? raw.trim() : '';
+    if (!name) continue;
+    const del = await pool.query(
+      'DELETE FROM grade_components WHERE course_id = $1 AND LOWER(name) = LOWER($2) RETURNING name',
+      [courseId, name]
+    );
+    if (del.rows.length > 0) removed.push(name);
+    else notFound.push(name);
+  }
+
+  return { removed, notFound };
+}
+
+async function toolSetGrades(
+  courseId: string,
+  userId: number,
+  grades: { name?: unknown; score?: unknown }[]
+) {
+  if (!(await verifyCourseOwnership(courseId, userId))) {
+    return { error: 'Not authorized to modify this course' };
+  }
+  if (!Array.isArray(grades) || grades.length === 0) return { error: 'No grades provided' };
+
+  const updated: { name: string; score: number }[] = [];
+  const notFound: string[] = [];
+  for (const g of grades) {
+    const name = typeof g?.name === 'string' ? g.name.trim() : '';
+    const score = Number(g?.score);
+    if (!name) return { error: 'Each grade needs the component name.' };
+    if (!Number.isFinite(score) || score < 0 || score > 100) {
+      return { error: `Score for ${name} must be between 0 and 100.` };
+    }
+    const upd = await pool.query(
+      'UPDATE grade_components SET graded = true, grade = $1 WHERE course_id = $2 AND LOWER(name) = LOWER($3) RETURNING name',
+      [score, courseId, name]
+    );
+    if (upd.rows.length > 0) updated.push({ name, score });
+    else notFound.push(name);
+  }
+
+  return { updated, notFound };
+}
+
 const TOOLS = [
   {
     type: 'function' as const,
@@ -264,6 +410,100 @@ const TOOLS = [
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'addComponents',
+      description:
+        'Create one or more grade components for this course. Only call this when the student clearly asks you to add or set up components. Each component needs a name and a weight percentage.',
+      parameters: {
+        type: 'object',
+        properties: {
+          components: {
+            type: 'array',
+            description: 'The components to create.',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string', description: 'Component name, e.g. "Midterm Exam".' },
+                weight: { type: 'number', description: 'Weight as a percentage from 0 to 100.' },
+              },
+              required: ['name', 'weight'],
+            },
+          },
+        },
+        required: ['components'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'updateComponents',
+      description:
+        "Change an existing component's weight and/or rename it. Match components by their current name.",
+      parameters: {
+        type: 'object',
+        properties: {
+          updates: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string', description: 'Current component name to update.' },
+                weight: { type: 'number', description: 'New weight 0-100 (optional).' },
+                newName: { type: 'string', description: 'New name for the component (optional).' },
+              },
+              required: ['name'],
+            },
+          },
+        },
+        required: ['updates'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'removeComponents',
+      description: 'Delete one or more components from this course, matched by name.',
+      parameters: {
+        type: 'object',
+        properties: {
+          names: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Component names to delete.',
+          },
+        },
+        required: ['names'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'setGrades',
+      description: 'Record or change the score on one or more components, matched by name.',
+      parameters: {
+        type: 'object',
+        properties: {
+          grades: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string', description: 'Component name.' },
+                score: { type: 'number', description: 'Score from 0 to 100.' },
+              },
+              required: ['name', 'score'],
+            },
+          },
+        },
+        required: ['grades'],
+      },
+    },
+  },
 ];
 
 export const chatWithCoach = async (req: AuthRequest, res: Response) => {
@@ -317,7 +557,12 @@ Rules:
 - Use plain English. When citing a number, be precise.
 - If the student asks a what-if question, call calculateScenario.
 - If they ask what they need for a grade, call getRequiredScore.
-- If they ask what to focus on or their riskiest component, call compareComponentImpact.`;
+- If they ask what to focus on or their riskiest component, call compareComponentImpact.
+- To add or set up components, call addComponents (it skips names that already exist).
+- To change a component's weight or rename it, call updateComponents.
+- To delete components, call removeComponents.
+- To record or change a score on a component, call setGrades.
+- Never say you changed course data unless a tool call actually succeeded. The component list above is your source of truth for what currently exists — do not add duplicates.`;
 
     const messages: any[] = [
       { role: 'system', content: systemPrompt },
@@ -327,6 +572,7 @@ Rules:
 
     const ai = getAi();
     let iterations = 0;
+    let dataChanged = false;
 
     while (iterations < 5) {
       iterations++;
@@ -341,7 +587,7 @@ Rules:
       const choice = response.choices[0];
 
       if (choice.finish_reason === 'stop' || !choice.message.tool_calls?.length) {
-        return res.json({ reply: choice.message.content ?? '' });
+        return res.json({ reply: choice.message.content ?? '', dataChanged });
       }
 
       messages.push(choice.message);
@@ -363,6 +609,22 @@ Rules:
               break;
             case 'compareComponentImpact':
               result = await toolCompareComponentImpact(courseId);
+              break;
+            case 'addComponents':
+              result = await toolAddComponents(courseId, userId, args.components ?? []);
+              if (!(result as { error?: string }).error) dataChanged = true;
+              break;
+            case 'updateComponents':
+              result = await toolUpdateComponents(courseId, userId, args.updates ?? []);
+              if (!(result as { error?: string }).error) dataChanged = true;
+              break;
+            case 'removeComponents':
+              result = await toolRemoveComponents(courseId, userId, args.names ?? []);
+              if (!(result as { error?: string }).error) dataChanged = true;
+              break;
+            case 'setGrades':
+              result = await toolSetGrades(courseId, userId, args.grades ?? []);
+              if (!(result as { error?: string }).error) dataChanged = true;
               break;
             default:
               result = { error: 'Unknown tool' };
