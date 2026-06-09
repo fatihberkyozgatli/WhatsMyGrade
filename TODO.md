@@ -1,5 +1,15 @@
 # WhatsMyGrade — TODO
 
+## Path to Production (current focus — in order)
+
+1. [ ] **Test the grade-calc engine** — unit-test `computeResult` (current/projected grade, required-score-per-letter, secured/impossible edges); thin auth happy-path test
+2. [ ] **Deploy + CI/CD** — hosting + pipeline + basic error monitoring (deploy early, iterate)
+3. [ ] **Security review + AI cost limits** — security pass; cap/abuse-guard the OpenAI endpoints before going public
+4. [ ] **Audit quick-wins** — clear the quick wins under "Audit Follow-ups"
+5. [ ] **Resume features** — GPA Calculator → Semester View → Demo Mode, on a tested + live base
+
+---
+
 ## Grade Coach — Improvements
 
 ### Short-term
@@ -33,6 +43,10 @@
 - [x] Course context shown in drawer header (current grade, remaining weight, status)
 - [x] Quick action chips + free-form chat input
 - [x] Toggle open/close from Course Detail page
+- [ ] Grade Coach drawer çok boş duruyor ilk açılışta. İlk mesajın altına direkt 2-3 mini insight ekle:
+“Biggest remaining component: Human Rights Journal”
+“Needed for A: 50%”
+“Risk level: Low”
 
 ### 3. AI Study Advisor
 - [ ] Add "Get Study Plan" button on CourseDetailPage
@@ -86,7 +100,7 @@
 - [ ] Mobile responsive audit and fixes
 - [x] Toast notifications (success + destructive with Undo) — course/component create/delete, scale save
 - [x] Help / info button in the navbar — context-aware popup (different content for dashboard, course pages, landing, login/signup)
-
+- [ ] Footer: Still feels slightly "student project." I'd add: Privacy Policy, Contact, GitHub and: Built by Fatih Berk Yozgatli at the very bottom.
 ---
 
 ## Technical

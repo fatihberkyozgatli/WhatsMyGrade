@@ -10,6 +10,7 @@ import { CourseDetailPage } from './pages/CourseDetailPage';
 import { UploadSyllabusPage } from './pages/UploadSyllabusPage';
 import { AuthProvider, useAuth } from './AuthContext';
 import { ToastProvider } from './ToastContext';
+import { SessionTimeout } from './components/SessionTimeout';
 
 function AppShell() {
   const { isAuthenticated, logout } = useAuth();
@@ -65,6 +66,7 @@ function AppShell() {
           </Routes>
       </main>
       {!isAuthRoute && <Footer />}
+      {isAuthenticated && <SessionTimeout />}
     </div>
   );
 }

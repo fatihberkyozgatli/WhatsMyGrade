@@ -35,7 +35,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   }
 };
 
-const TOKEN_TTL = '7d';
+const TOKEN_TTL = '8h';
 
 export const generateToken = (userId: number, email: string) => {
   if (!config.jwt_secret) {

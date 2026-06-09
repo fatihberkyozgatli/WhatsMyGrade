@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import api from './api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -14,14 +15,18 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-const isTokenExpired = (token: string): boolean => {
+const decodeExpiryMs = (token: string): number | null => {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    if (typeof payload.exp !== 'number') return true;
-    return payload.exp * 1000 < Date.now();
+    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
   } catch {
-    return true;
+    return null;
   }
+};
+
+const isTokenExpired = (token: string): boolean => {
+  const expiry = decodeExpiryMs(token);
+  return expiry === null || expiry <= Date.now();
 };
 
 const readValidToken = (): string | null => {
@@ -37,9 +42,18 @@ const readValidToken = (): string | null => {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(readValidToken);
 
+  const login = useCallback((newToken: string) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+  }, []);
+
   useEffect(() => {
     const checkToken = () => setToken(readValidToken());
-
     window.addEventListener('focus', checkToken);
     window.addEventListener('storage', checkToken);
     return () => {
@@ -48,15 +62,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const login = (newToken: string) => {
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
-  };
+  useEffect(() => {
+    if (!token) return;
+    const expiry = decodeExpiryMs(token);
+    if (expiry === null) return;
+    const msUntilExpiry = expiry - Date.now();
+    if (msUntilExpiry <= 0) {
+      logout();
+      return;
+    }
+    const timer = window.setTimeout(logout, msUntilExpiry);
+    return () => window.clearTimeout(timer);
+  }, [token, logout]);
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-  };
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    api.get('/auth/profile').catch((err) => {
+      if (!cancelled && err?.response?.status === 401) {
+        logout();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const isAuthenticated = token !== null;
 
