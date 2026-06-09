@@ -76,7 +76,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, gradeData, statu
             {onDelete && (
               <button
                 onClick={handleDelete}
-                className="pointer-events-auto text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-300 dark:bg-red-950 dark:hover:bg-red-900 font-semibold p-1.5 rounded transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                className="pointer-events-auto inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-300 dark:bg-red-950 dark:hover:bg-red-900 font-semibold p-1.5 rounded transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 aria-label={`Delete ${course.name}`}
               >
                 <XIcon className="w-4 h-4" />

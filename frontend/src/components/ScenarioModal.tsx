@@ -183,7 +183,7 @@ export const ScenarioModal: React.FC<ScenarioModalProps> = ({ isOpen, onClose, c
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 p-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 p-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <XIcon className="w-5 h-5" />
             </button>

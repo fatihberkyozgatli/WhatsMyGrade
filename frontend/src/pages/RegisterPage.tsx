@@ -4,6 +4,7 @@ import api from '../api';
 import { FormInput } from '../components/FormInputs';
 import { AuthLayout } from '../components/AuthLayout';
 import { TermsModal } from '../components/TermsModal';
+import { Spinner } from '../components/Spinner';
 import { useAuth } from '../AuthContext';
 
 export const RegisterPage: React.FC = () => {
@@ -112,7 +113,8 @@ export const RegisterPage: React.FC = () => {
           placeholder="Confirm password"
         />
 
-        <button type="submit" disabled={loading} className="btn-primary mt-2 w-full">
+        <button type="submit" disabled={loading} className="btn-primary mt-2 w-full inline-flex items-center justify-center gap-2">
+          {loading && <Spinner />}
           {loading ? 'Creating account...' : 'Create Account'}
         </button>
 

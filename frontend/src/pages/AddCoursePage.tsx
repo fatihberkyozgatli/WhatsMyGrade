@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
 import { ArrowLeftIcon } from '../components/icons';
+import { Spinner } from '../components/Spinner';
 import { useToast } from '../ToastContext';
 
 export const AddCoursePage: React.FC = () => {
@@ -140,8 +141,9 @@ export const AddCoursePage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary flex-1"
+                className="btn-primary flex-1 inline-flex items-center justify-center gap-2"
               >
+                {loading && <Spinner />}
                 {loading ? 'Creating...' : 'Create Course'}
               </button>
               <button

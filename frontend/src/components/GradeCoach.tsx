@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import api from '../api';
 import { Course, GradeCalculationResult } from '../types';
-import { XIcon } from './icons';
+import { XIcon, CheckIcon, AlertTriangleIcon, ListChecksIcon, TrendingUpIcon } from './icons';
 
 interface Props {
   isOpen: boolean;
@@ -32,6 +32,71 @@ function statusClasses(s: string) {
   if (s === 'At Risk')   return { text: 'text-amber-600 dark:text-amber-400',  badge: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400' };
   return                        { text: 'text-red-600 dark:text-red-400',      badge: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400' };
 }
+
+interface Insight {
+  key: string;
+  label: string;
+  value: string;
+  Icon: React.FC<{ className?: string }>;
+  tone: string;
+}
+
+const TONE = {
+  good: 'bg-green-50 border-green-200 text-green-700 dark:bg-green-950 dark:border-green-900 dark:text-green-300',
+  info: 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950 dark:border-blue-900 dark:text-blue-300',
+  warn: 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-300',
+  bad: 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-900 dark:text-red-300',
+  neutral: 'bg-white border-gray-200 text-gray-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300',
+};
+
+const riskFromRequired = (required: number): Insight => {
+  if (required <= 70) return { key: 'risk', label: 'Risk', value: 'Low', Icon: CheckIcon, tone: TONE.good };
+  if (required <= 85) return { key: 'risk', label: 'Risk', value: 'Medium', Icon: AlertTriangleIcon, tone: TONE.warn };
+  return { key: 'risk', label: 'Risk', value: 'High', Icon: AlertTriangleIcon, tone: TONE.bad };
+};
+
+const buildInsights = (calc: GradeCalculationResult): Insight[] => {
+  const components = calc.components || [];
+  if (components.length === 0) return [];
+  const insights: Insight[] = [];
+
+  const ungraded = components.filter((c) => !c.graded);
+  if (ungraded.length > 0) {
+    const biggest = ungraded.reduce((a, b) => (Number(b.weight) > Number(a.weight) ? b : a));
+    insights.push({
+      key: 'remaining',
+      label: 'Biggest remaining',
+      value: `${biggest.name} (${Number(biggest.weight)}%)`,
+      Icon: ListChecksIcon,
+      tone: TONE.neutral,
+    });
+  } else {
+    insights.push({ key: 'remaining', label: 'Components', value: 'All graded', Icon: CheckIcon, tone: TONE.good });
+  }
+
+  const order = ['A', 'B', 'C', 'D'];
+  const target = order.find((letter) => {
+    const req = calc.requiredByLetterGrade?.[letter];
+    return req && !Number.isNaN(parseFloat(req));
+  });
+  if (target) {
+    insights.push({
+      key: 'needed',
+      label: `Needed for ${target}`,
+      value: calc.requiredByLetterGrade[target],
+      Icon: TrendingUpIcon,
+      tone: TONE.info,
+    });
+    insights.push(riskFromRequired(parseFloat(calc.requiredByLetterGrade[target])));
+  } else {
+    const secured = order.find((letter) => calc.requiredByLetterGrade?.[letter] === 'Already secured');
+    if (secured) {
+      insights.push({ key: 'needed', label: 'Secured', value: `At least ${secured}`, Icon: CheckIcon, tone: TONE.good });
+    }
+  }
+
+  return insights;
+};
 
 const SparkleIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
@@ -79,6 +144,8 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; });
+
+  const insights = useMemo(() => (calculation ? buildInsights(calculation) : []), [calculation]);
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -229,7 +296,7 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
                 <button
                   onClick={onClose}
                   aria-label="Close Grade Coach"
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   <XIcon className="w-5 h-5" />
                 </button>
@@ -286,6 +353,21 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
                       : 'bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-200 rounded-tl-sm border border-gray-100 dark:border-slate-700'
                   }`}>
                     {renderContent(msg.content)}
+                    {msg.synthetic && msg.id === 'welcome' && insights.length > 0 && (
+                      <div className="mt-3 flex flex-col gap-1.5">
+                        {insights.map((chip) => (
+                          <div
+                            key={chip.key}
+                            className={`flex items-start gap-2 rounded-lg border px-2.5 py-1.5 text-xs ${chip.tone}`}
+                          >
+                            <chip.Icon className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                            <span>
+                              <span className="font-semibold">{chip.label}:</span> {chip.value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -337,7 +419,7 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
                   placeholder="Ask about this course…"
                   rows={1}
                   disabled={loading}
-                  className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 leading-relaxed overflow-hidden"
+                  className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-4 py-2.5 text-base sm:text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 leading-relaxed overflow-hidden"
                   style={{ maxHeight: '128px' }}
                 />
                 <button

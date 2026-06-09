@@ -162,7 +162,7 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
           id="mobile-nav"
           className="sm:hidden border-t border-gray-200 dark:border-slate-700 px-4 py-3 flex flex-col items-center gap-3"
         >
-          <NavLink to="/dashboard" onClick={closeMenu} className={navLinkClass}>
+          <NavLink to="/dashboard" onClick={closeMenu} className={(state) => `${navLinkClass(state)} block w-full text-center py-3`}>
             Dashboard
           </NavLink>
           <button
@@ -171,7 +171,7 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
               closeMenu();
               setChoiceOpen(true);
             }}
-            className={navLinkClass({ isActive: false })}
+            className={`${navLinkClass({ isActive: false })} block w-full text-center py-3`}
           >
             Add Course
           </button>
@@ -180,7 +180,7 @@ export const Header: React.FC<HeaderProps> = ({ isAuthenticated, onLogout }) => 
               closeMenu();
               onLogout();
             }}
-            className="btn-secondary text-sm"
+            className="btn-secondary text-sm w-full"
           >
             Logout
           </button>

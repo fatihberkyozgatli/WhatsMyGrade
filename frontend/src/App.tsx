@@ -18,7 +18,7 @@ function AppShell() {
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-slate-900">
+    <div className="h-dvh flex flex-col overflow-hidden bg-white dark:bg-slate-900">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-3 focus:py-2 focus:rounded-lg focus:bg-white focus:text-blue-600 focus:shadow dark:focus:bg-slate-800 dark:focus:text-blue-400"

@@ -261,7 +261,7 @@ export const UploadSyllabusPage: React.FC = () => {
                       type="button"
                       onClick={() => removeComponent(i)}
                       aria-label={`Remove ${c.name || 'component'}`}
-                      className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 shrink-0"
+                      className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 shrink-0"
                     >
                       <XIcon className="w-4 h-4" />
                     </button>

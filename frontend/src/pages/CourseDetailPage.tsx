@@ -474,7 +474,7 @@ export const CourseDetailPage: React.FC = () => {
                               e.currentTarget.blur();
                             }
                           }}
-                          className="w-20 px-2.5 py-1.5 border border-gray-300 rounded text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
+                          className="w-20 min-h-[44px] sm:min-h-0 px-2.5 py-1.5 border border-gray-300 rounded text-base sm:text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
                         />
                         <span className="text-xs text-gray-500 dark:text-slate-400">%</span>
                       </>
@@ -510,7 +510,7 @@ export const CourseDetailPage: React.FC = () => {
                           handleUpdateComponent(comp.id, true, parsed);
                           e.currentTarget.value = '';
                         }}
-                        className="w-20 px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
+                        className="w-20 min-h-[44px] sm:min-h-0 px-2.5 py-1.5 border border-gray-300 rounded text-base sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
                       />
                     )}
                     </div>
@@ -519,7 +519,7 @@ export const CourseDetailPage: React.FC = () => {
                       {comp.graded && comp.grade !== null && (
                         <button
                           onClick={() => handleUpdateComponent(comp.id, false, null)}
-                          className="shrink-0 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-1.5 py-1 rounded transition"
+                          className="shrink-0 inline-flex items-center justify-center min-h-[44px] sm:min-h-0 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-2.5 py-1 rounded transition"
                           title="Mark as ungraded"
                           aria-label={`Mark ${comp.name} as ungraded`}
                         >
@@ -530,7 +530,7 @@ export const CourseDetailPage: React.FC = () => {
                       <button
                         onClick={() => handleDeleteComponent(comp.id, comp.name)}
                         aria-label={`Delete ${comp.name}`}
-                        className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                       >
                         <XIcon className="w-4 h-4" />
                       </button>

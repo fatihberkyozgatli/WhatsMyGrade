@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
 import { AuthLayout } from '../components/AuthLayout';
+import { Spinner } from '../components/Spinner';
 import { useAuth } from '../AuthContext';
 
 export const LoginPage: React.FC = () => {
@@ -78,7 +79,8 @@ export const LoginPage: React.FC = () => {
           placeholder="Enter your password"
         />
 
-        <button type="submit" disabled={loading} className="btn-primary mt-2 w-full">
+        <button type="submit" disabled={loading} className="btn-primary mt-2 w-full inline-flex items-center justify-center gap-2">
+          {loading && <Spinner />}
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
       </form>
