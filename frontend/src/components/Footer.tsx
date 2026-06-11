@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
   return (
-    <footer className="shrink-0 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
+    <footer role="contentinfo" className="shrink-0 mt-auto border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <Link

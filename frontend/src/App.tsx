@@ -64,8 +64,8 @@ function AppShell() {
         />
             <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/'} replace />} />
           </Routes>
+          {!isAuthRoute && <Footer />}
       </main>
-      {!isAuthRoute && <Footer />}
       {isAuthenticated && <SessionTimeout />}
     </div>
   );

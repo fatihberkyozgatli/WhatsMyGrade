@@ -3,6 +3,7 @@ import pool from '../db';
 import { AuthRequest } from '../middleware';
 import { getAi, DEFAULT_MODEL, isAiConfigured } from '../services/ai';
 import { parseScale, DEFAULT_GRADE_SCALE, GradeScale } from '../constants';
+import { computeResult, computeRequiredForLetter, computeScenario } from '../services/gradeCalc';
 import Joi from 'joi';
 
 const messageSchema = Joi.object({
@@ -19,42 +20,24 @@ const messageSchema = Joi.object({
 });
 
 async function fetchSummary(courseId: string, userId: number) {
-  const [courseRes, componentsRes, scaleRes] = await Promise.all([
+  const [courseRes, { components, scale }] = await Promise.all([
     pool.query('SELECT * FROM courses WHERE id = $1 AND user_id = $2', [courseId, userId]),
-    pool.query('SELECT * FROM grade_components WHERE course_id = $1 ORDER BY id', [courseId]),
-    pool.query('SELECT scale FROM grade_scales WHERE course_id = $1', [courseId]),
+    fetchComponentsAndScale(courseId),
   ]);
 
   if (courseRes.rows.length === 0) return null;
 
   const course = courseRes.rows[0];
-  const components = componentsRes.rows;
-  const scale: GradeScale =
-    scaleRes.rows.length > 0 ? parseScale(scaleRes.rows[0].scale) : DEFAULT_GRADE_SCALE;
-
-  let totalWeightedGrade = 0;
-  let totalGradedWeight = 0;
-  let totalRemainingWeight = 0;
-
-  for (const comp of components) {
-    const w = Number(comp.weight);
-    if (comp.graded && comp.grade !== null) {
-      totalWeightedGrade += (Number(comp.grade) * w) / 100;
-      totalGradedWeight += w;
-    } else {
-      totalRemainingWeight += w;
-    }
-  }
-
-  const currentGrade =
-    totalGradedWeight > 0 ? totalWeightedGrade / (totalGradedWeight / 100) : null;
+  const result = computeResult(components, scale);
 
   return {
     courseName: course.name,
     semester: course.semester,
-    currentGrade: currentGrade !== null ? Math.round(currentGrade * 100) / 100 : null,
-    percentageGraded: totalGradedWeight,
-    percentageRemaining: totalRemainingWeight,
+    currentGrade: result.currentGrade,
+    percentageGraded: result.percentageGraded,
+    percentageRemaining: result.percentageRemaining,
+    maximumObtainable: result.projectedFinalGrade,
+    weightWarning: result.weightWarning,
     components: components.map((c) => ({
       name: c.name,
       weight: Number(c.weight),
@@ -65,125 +48,28 @@ async function fetchSummary(courseId: string, userId: number) {
   };
 }
 
-async function toolCalculateScenario(
-  courseId: string,
-  userId: number,
-  hypotheticalScores: Record<string, number>
-) {
+async function fetchComponentsAndScale(courseId: string) {
   const [componentsRes, scaleRes] = await Promise.all([
     pool.query('SELECT * FROM grade_components WHERE course_id = $1 ORDER BY id', [courseId]),
     pool.query('SELECT scale FROM grade_scales WHERE course_id = $1', [courseId]),
   ]);
-
-  const components = componentsRes.rows;
   const scale: GradeScale =
     scaleRes.rows.length > 0 ? parseScale(scaleRes.rows[0].scale) : DEFAULT_GRADE_SCALE;
-  const totalWeight = components.reduce((s: number, c: any) => s + Number(c.weight), 0);
-
-  let coveredWeight = 0;
-  let weightedSum = 0;
-
-  for (const comp of components) {
-    const w = Number(comp.weight);
-    const nameLower = comp.name.toLowerCase();
-    const matchKey = Object.keys(hypotheticalScores).find(
-      (k) => k.toLowerCase() === nameLower
-    );
-    const score =
-      matchKey !== undefined
-        ? hypotheticalScores[matchKey]
-        : comp.graded && comp.grade !== null
-        ? Number(comp.grade)
-        : null;
-
-    if (score !== null) {
-      weightedSum += (score * w) / 100;
-      coveredWeight += w;
-    }
-  }
-
-  const projectedGrade = coveredWeight > 0 ? weightedSum / (coveredWeight / 100) : null;
-
-  let projectedLetter = 'N/A';
-  if (projectedGrade !== null) {
-    const entries = Object.entries(scale).sort((a, b) => b[1].min - a[1].min);
-    for (const [letter, range] of entries) {
-      if (projectedGrade >= range.min) {
-        projectedLetter = letter;
-        break;
-      }
-    }
-  }
-
-  return {
-    projectedGrade: projectedGrade !== null ? Math.round(projectedGrade * 100) / 100 : null,
-    projectedLetter,
-    coveragePercent: totalWeight > 0 ? Math.round((coveredWeight / totalWeight) * 100) : 0,
-  };
+  return { components: componentsRes.rows, scale };
 }
 
-async function toolGetRequiredScore(
+async function toolCalculateScenario(
   courseId: string,
-  userId: number,
-  targetLetter: string
+  hypotheticalScores: Record<string, number>,
+  allRemainingScore?: number
 ) {
-  const [componentsRes, scaleRes] = await Promise.all([
-    pool.query('SELECT * FROM grade_components WHERE course_id = $1 ORDER BY id', [courseId]),
-    pool.query('SELECT scale FROM grade_scales WHERE course_id = $1', [courseId]),
-  ]);
+  const { components, scale } = await fetchComponentsAndScale(courseId);
+  return computeScenario(components, scale, hypotheticalScores, allRemainingScore);
+}
 
-  const components = componentsRes.rows;
-  const scale: GradeScale =
-    scaleRes.rows.length > 0 ? parseScale(scaleRes.rows[0].scale) : DEFAULT_GRADE_SCALE;
-  const target = scale[targetLetter.toUpperCase()];
-
-  if (!target) return { error: `Unknown letter grade: ${targetLetter}` };
-
-  let weightedGrade = 0;
-  let gradedWeight = 0;
-  let remainingWeight = 0;
-
-  for (const comp of components) {
-    const w = Number(comp.weight);
-    if (comp.graded && comp.grade !== null) {
-      weightedGrade += (Number(comp.grade) * w) / 100;
-      gradedWeight += w;
-    } else {
-      remainingWeight += w;
-    }
-  }
-
-  const currentGrade = gradedWeight > 0 ? weightedGrade / (gradedWeight / 100) : 0;
-
-  if (remainingWeight === 0) {
-    return {
-      targetLetter,
-      targetMin: target.min,
-      requiredAverage: null,
-      status: currentGrade >= target.min ? 'already_secured' : 'no_longer_possible',
-      currentGrade: Math.round(currentGrade * 100) / 100,
-      remainingComponents: [],
-    };
-  }
-
-  const requiredAverage =
-    (target.min * 100 - currentGrade * gradedWeight) / remainingWeight;
-
-  return {
-    targetLetter,
-    targetMin: target.min,
-    requiredAverage: Math.round(requiredAverage * 100) / 100,
-    status:
-      requiredAverage > 100
-        ? 'not_possible'
-        : requiredAverage < 0
-        ? 'already_secured'
-        : 'achievable',
-    currentGrade: Math.round(currentGrade * 100) / 100,
-    remainingComponents: components
-      .filter((c: any) => !(c.graded && c.grade !== null))
-      .map((c: any) => ({ name: c.name, weight: Number(c.weight) })),
-  };
+async function toolGetRequiredScore(courseId: string, targetLetter: string) {
+  const { components, scale } = await fetchComponentsAndScale(courseId);
+  return computeRequiredForLetter(components, scale, targetLetter);
 }
 
 async function toolCompareComponentImpact(courseId: string) {
@@ -367,7 +253,7 @@ const TOOLS = [
     function: {
       name: 'calculateScenario',
       description:
-        'Calculate the projected final grade if the student scores specific hypothetical values on named components.',
+        'Calculate the projected grade if the student scores specific hypothetical values on named components. The projection covers graded components plus the hypothetical ones; coveragePercent tells how much of the course it covers. Any names that did not match a component are returned in unmatchedNames — if that happens, retry with the exact names from the course summary.',
       parameters: {
         type: 'object',
         properties: {
@@ -376,6 +262,11 @@ const TOOLS = [
             description:
               'Object mapping component name (exactly as it appears in the course) to a hypothetical score 0-100.',
             additionalProperties: { type: 'number' },
+          },
+          allRemainingScore: {
+            type: 'number',
+            description:
+              'Optional. Apply this score to every remaining ungraded component (e.g. "what if I get 80 on everything left"). Individual hypotheticalScores override it.',
           },
         },
         required: ['hypotheticalScores'],
@@ -549,10 +440,14 @@ Current snapshot:
 - Graded weight: ${summary.percentageGraded}% of total
 - Remaining weight: ${summary.percentageRemaining}%
 - Components:
-${componentList}
+${componentList}${summary.weightWarning ? `\n- Note: ${summary.weightWarning}. Calculations normalize by the actual total.` : ''}
 
 Rules:
-- Always call a tool for any grade calculation — never estimate from memory.
+- Always call a tool for any grade calculation — never estimate from memory, and never do the arithmetic yourself.
+- Report the numbers a tool returns exactly as given; do not round further or recompute them.
+- After you add, update, remove, or grade components, the snapshot above is outdated — call getCourseSummary if you need current numbers.
+- For "what if I get X on everything left" questions, call calculateScenario with allRemainingScore instead of listing components.
+- When calculateScenario returns unmatchedNames, retry using the exact component names from the snapshot before answering.
 - Keep answers short, clear, and encouraging. 2–4 sentences for simple questions.
 - Use plain English. When citing a number, be precise.
 - If the student asks a what-if question, call calculateScenario.
@@ -599,13 +494,17 @@ Rules:
           const args = JSON.parse(fn?.arguments || '{}');
           switch (fn?.name) {
             case 'getCourseSummary':
-              result = summary;
+              result = (await fetchSummary(courseId, userId)) ?? { error: 'Course not found' };
               break;
             case 'calculateScenario':
-              result = await toolCalculateScenario(courseId, userId, args.hypotheticalScores ?? {});
+              result = await toolCalculateScenario(
+                courseId,
+                args.hypotheticalScores ?? {},
+                typeof args.allRemainingScore === 'number' ? args.allRemainingScore : undefined
+              );
               break;
             case 'getRequiredScore':
-              result = await toolGetRequiredScore(courseId, userId, args.targetLetter);
+              result = await toolGetRequiredScore(courseId, args.targetLetter);
               break;
             case 'compareComponentImpact':
               result = await toolCompareComponentImpact(courseId);

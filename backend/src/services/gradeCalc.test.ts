@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { computeResult, GradeComponentInput } from './gradeCalc';
+import {
+  computeResult,
+  computeRequiredForLetter,
+  computeScenario,
+  GradeComponentInput,
+} from './gradeCalc';
 import { DEFAULT_GRADE_SCALE, buildGradeScale, parseScale } from '../constants';
 
 const comp = (
@@ -7,6 +12,13 @@ const comp = (
   graded: boolean,
   grade: number | string | null
 ): GradeComponentInput => ({ weight, graded, grade });
+
+const named = (
+  name: string,
+  weight: number | string,
+  graded: boolean,
+  grade: number | string | null
+): GradeComponentInput => ({ name, weight, graded, grade });
 
 describe('computeResult — no components', () => {
   it('returns nulls and a "no components" status for an empty list', () => {
@@ -213,6 +225,182 @@ describe('buildGradeScale', () => {
 
   it('defaults to 90/80/70/60 when thresholds are omitted', () => {
     expect(buildGradeScale({})).toEqual(buildGradeScale({ A: 90, B: 80, C: 70, D: 60 }));
+  });
+});
+
+describe('computeRequiredForLetter', () => {
+  it('computes the required average on remaining work for the target letter', () => {
+    const result = computeRequiredForLetter(
+      [comp(50, true, 80), comp(50, false, null)],
+      DEFAULT_GRADE_SCALE,
+      'B'
+    );
+
+    expect(result).toMatchObject({
+      targetLetter: 'B',
+      targetMin: 80,
+      requiredAverage: 80,
+      status: 'achievable',
+      currentGrade: 80,
+    });
+  });
+
+  it('normalizes by the actual total weight when weights do not sum to 100', () => {
+    const result = computeRequiredForLetter(
+      [named('Essay', 40, true, 90), named('Final', 50, false, null)],
+      DEFAULT_GRADE_SCALE,
+      'A'
+    );
+
+    expect(result.requiredAverage).toBe(90);
+    expect(result.status).toBe('achievable');
+  });
+
+  it('agrees with computeResult for every letter', () => {
+    const components = [comp(30, true, 72), comp(30, true, 91), comp(40, false, null)];
+    const engine = computeResult(components, DEFAULT_GRADE_SCALE);
+
+    for (const letter of ['A', 'B', 'C', 'D', 'F']) {
+      const r = computeRequiredForLetter(components, DEFAULT_GRADE_SCALE, letter);
+      const expected = engine.requiredByLetterGrade[letter];
+      if (expected === 'Already secured') {
+        expect(r.status).toBe('already_secured');
+      } else if (expected === 'No longer possible') {
+        expect(r.status).toBe('not_possible');
+      } else {
+        expect(r.status).toBe('achievable');
+        expect(`${r.requiredAverage!.toFixed(2)}%`).toBe(expected);
+      }
+    }
+  });
+
+  it('reports already_secured when the required average is negative', () => {
+    const result = computeRequiredForLetter(
+      [comp(50, true, 100), comp(50, false, null)],
+      DEFAULT_GRADE_SCALE,
+      'F'
+    );
+
+    expect(result.status).toBe('already_secured');
+  });
+
+  it('reports not_possible when the required average exceeds 100', () => {
+    const result = computeRequiredForLetter(
+      [comp(50, true, 50), comp(50, false, null)],
+      DEFAULT_GRADE_SCALE,
+      'A'
+    );
+
+    expect(result.status).toBe('not_possible');
+  });
+
+  it('handles a fully graded course as secured or not possible', () => {
+    const components = [comp(100, true, 85)];
+
+    expect(computeRequiredForLetter(components, DEFAULT_GRADE_SCALE, 'B').status).toBe(
+      'already_secured'
+    );
+    expect(computeRequiredForLetter(components, DEFAULT_GRADE_SCALE, 'A').status).toBe(
+      'not_possible'
+    );
+  });
+
+  it('works before any grades exist', () => {
+    const result = computeRequiredForLetter([comp(100, false, null)], DEFAULT_GRADE_SCALE, 'A');
+
+    expect(result.requiredAverage).toBe(90);
+    expect(result.status).toBe('achievable');
+    expect(result.currentGrade).toBeNull();
+  });
+
+  it('rejects an unknown letter', () => {
+    const result = computeRequiredForLetter([comp(100, false, null)], DEFAULT_GRADE_SCALE, 'Z');
+
+    expect(result.error).toBeDefined();
+  });
+
+  it('lists the remaining ungraded components', () => {
+    const result = computeRequiredForLetter(
+      [named('Midterm', 40, true, 88), named('Final', 60, false, null)],
+      DEFAULT_GRADE_SCALE,
+      'A'
+    );
+
+    expect(result.remainingComponents).toEqual([{ name: 'Final', weight: 60 }]);
+  });
+});
+
+describe('computeScenario', () => {
+  const courseComponents = [
+    named('Midterm', 50, true, 80),
+    named('Final Exam', 50, false, null),
+  ];
+
+  it('projects the grade over covered weight, matching names case-insensitively', () => {
+    const result = computeScenario(courseComponents, DEFAULT_GRADE_SCALE, {
+      'final exam': 90,
+    });
+
+    expect(result.projectedGrade).toBe(85);
+    expect(result.projectedLetter).toBe('B');
+    expect(result.coveragePercent).toBe(100);
+    expect(result.unmatchedNames).toEqual([]);
+  });
+
+  it('reports names that did not match any component instead of silently dropping them', () => {
+    const result = computeScenario(courseComponents, DEFAULT_GRADE_SCALE, { Finol: 90 });
+
+    expect(result.unmatchedNames).toEqual(['Finol']);
+    expect(result.projectedGrade).toBe(80);
+    expect(result.coveragePercent).toBe(50);
+  });
+
+  it('matches a partial name when it is unambiguous', () => {
+    const result = computeScenario(courseComponents, DEFAULT_GRADE_SCALE, { final: 90 });
+
+    expect(result.unmatchedNames).toEqual([]);
+    expect(result.projectedGrade).toBe(85);
+  });
+
+  it('does not bind a nonexistent name onto a component it merely contains', () => {
+    const result = computeScenario(
+      [named('Quiz 1', 50, true, 80), named('Quiz 2', 50, false, null)],
+      DEFAULT_GRADE_SCALE,
+      { 'Quiz 10': 95 }
+    );
+
+    expect(result.unmatchedNames).toEqual(['Quiz 10']);
+    expect(result.projectedGrade).toBe(80);
+  });
+
+  it('lets a hypothetical score override an existing grade', () => {
+    const result = computeScenario(courseComponents, DEFAULT_GRADE_SCALE, {
+      Midterm: 100,
+      'Final Exam': 100,
+    });
+
+    expect(result.projectedGrade).toBe(100);
+    expect(result.projectedLetter).toBe('A');
+  });
+
+  it('fills every ungraded component when allRemainingScore is given', () => {
+    const result = computeScenario(
+      [named('Midterm', 50, true, 80), named('Essay', 25, false, null), named('Final', 25, false, null)],
+      DEFAULT_GRADE_SCALE,
+      {},
+      90
+    );
+
+    expect(result.projectedGrade).toBe(85);
+    expect(result.coveragePercent).toBe(100);
+  });
+
+  it('returns no projection when nothing is graded or hypothesized', () => {
+    const result = computeScenario([named('Final', 100, false, null)], DEFAULT_GRADE_SCALE, {});
+
+    expect(result.projectedGrade).toBeNull();
+    expect(result.projectedLetter).toBe('N/A');
+    expect(result.coveragePercent).toBe(0);
   });
 });
 

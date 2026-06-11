@@ -457,17 +457,40 @@ export const CourseDetailPage: React.FC = () => {
             <p className="text-center py-8 text-gray-500 dark:text-slate-400">No components added yet. Add one to start tracking.</p>
           ) : (
             <div className="space-y-2">
-              {components.map((comp) => (
-                <div key={comp.id} className="flex flex-col gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition dark:border-slate-700 dark:hover:bg-slate-700/40 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-                  <div className="min-w-0 sm:flex-1">
-                    <div className="font-medium text-gray-900 dark:text-slate-100 truncate" title={comp.name}>{comp.name}</div>
-                    <div className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">Weight: {Number(comp.weight)}%</div>
+              {components.map((comp) => {
+                const deleteButton = (visibility: string) => (
+                  <button
+                    onClick={() => handleDeleteComponent(comp.id, comp.name)}
+                    aria-label={`Delete ${comp.name}`}
+                    className={`${visibility} items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-gray-500 hover:text-red-600 active:text-red-600 dark:text-slate-400 dark:hover:text-red-400 dark:active:text-red-400 p-1.5 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500`}
+                  >
+                    <XIcon className="w-4 h-4" />
+                  </button>
+                );
+
+                return (
+                <div key={comp.id} className="p-3.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition dark:border-slate-700 dark:hover:bg-slate-700/40 sm:p-4 sm:flex sm:items-center sm:justify-between sm:gap-2">
+                  <div className="flex items-start justify-between gap-3 sm:items-center sm:flex-1 sm:min-w-0">
+                    <div className="min-w-0">
+                      <div className="font-medium text-gray-900 dark:text-slate-100 truncate" title={comp.name}>{comp.name}</div>
+                      <div className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">Weight: {Number(comp.weight)}%</div>
+                    </div>
+                    {deleteButton('inline-flex -mt-2 -mr-2 sm:hidden')}
                   </div>
 
-                  <div className="flex items-center gap-2 w-full justify-between sm:w-auto sm:justify-normal shrink-0">
-                    <div className="flex items-center gap-2">
+                  <div className="mt-2 sm:mt-0 flex items-center justify-end gap-2 shrink-0">
+                    {comp.graded && comp.grade !== null && (
+                      <button
+                        onClick={() => handleUpdateComponent(comp.id, false, null)}
+                        className="shrink-0 inline-flex items-center justify-center min-h-[44px] sm:min-h-0 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-2.5 py-1 rounded transition"
+                        title="Mark as ungraded"
+                        aria-label={`Mark ${comp.name} as ungraded`}
+                      >
+                        Clear
+                      </button>
+                    )}
+                    <div className="relative">
                     {comp.graded && comp.grade !== null ? (
-                      <>
                         <input
                           type="number"
                           min="0"
@@ -496,10 +519,8 @@ export const CourseDetailPage: React.FC = () => {
                               e.currentTarget.blur();
                             }
                           }}
-                          className="w-20 min-h-[44px] sm:min-h-0 px-2.5 py-1.5 border border-gray-300 rounded text-base sm:text-sm font-semibold text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
+                          className="w-24 min-h-[44px] sm:min-h-0 pl-2.5 pr-7 py-1.5 border border-gray-300 rounded text-base sm:text-sm font-semibold text-blue-600 tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-blue-400"
                         />
-                        <span className="text-xs text-gray-500 dark:text-slate-400">%</span>
-                      </>
                     ) : (
                       <input
                         type="number"
@@ -532,34 +553,18 @@ export const CourseDetailPage: React.FC = () => {
                           handleUpdateComponent(comp.id, true, parsed);
                           e.currentTarget.value = '';
                         }}
-                        className="w-20 min-h-[44px] sm:min-h-0 px-2.5 py-1.5 border border-gray-300 rounded text-base sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
+                        className="w-24 min-h-[44px] sm:min-h-0 pl-2.5 pr-7 py-1.5 border border-gray-300 rounded text-base sm:text-sm tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500"
                       />
                     )}
+                      <span aria-hidden="true" className="absolute inset-y-0 right-2.5 flex items-center text-sm text-gray-500 dark:text-slate-400 pointer-events-none">
+                        %
+                      </span>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      {comp.graded && comp.grade !== null && (
-                        <button
-                          onClick={() => handleUpdateComponent(comp.id, false, null)}
-                          className="shrink-0 inline-flex items-center justify-center min-h-[44px] sm:min-h-0 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:text-blue-300 dark:bg-blue-950 dark:hover:bg-blue-900 text-xs font-medium px-2.5 py-1 rounded transition"
-                          title="Mark as ungraded"
-                          aria-label={`Mark ${comp.name} as ungraded`}
-                        >
-                          Clear
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => handleDeleteComponent(comp.id, comp.name)}
-                        aria-label={`Delete ${comp.name}`}
-                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                      >
-                        <XIcon className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {deleteButton('hidden sm:inline-flex')}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </motion.div>

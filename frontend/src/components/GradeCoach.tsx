@@ -232,7 +232,8 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
     try {
       const history = messages
         .filter(m => !m.synthetic)
-        .map(m => ({ role: m.role, content: m.content }));
+        .slice(-16)
+        .map(m => ({ role: m.role, content: m.content.slice(0, 800) }));
 
       const res = await api.post(`/coach/${courseId}`, { message: trimmed, history });
       setMessages(prev => [...prev, {
@@ -274,6 +275,7 @@ export const GradeCoach: React.FC<Props> = ({ isOpen, onClose, courseId, course,
 
           <motion.div
             key="drawer"
+            id="grade-coach-drawer"
             ref={drawerRef}
             role="dialog"
             aria-modal="true"
