@@ -9,6 +9,7 @@ import gradeScaleRoutes from './routes/gradeScale';
 import calculateRoutes from './routes/calculate';
 import coachRoutes from './routes/coach';
 import gradeEntryRoutes from './routes/gradeEntry';
+import { scheduleDemoReset } from './demoReset';
 
 const app = express();
 
@@ -57,6 +58,9 @@ app.use((err: Error & { type?: string; status?: number }, _req: Request, res: Re
 
 app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
+  if (config.demo_reset_enabled) {
+    scheduleDemoReset();
+  }
 });
 
 export default app;

@@ -6,13 +6,30 @@ import Joi from 'joi';
 
 const schema = {
   register: Joi.object({
-    email: Joi.string().email().max(255).required(),
-    password: Joi.string().min(6).max(128).required(),
-    name: Joi.string().max(255).required(),
+    email: Joi.string().email().max(255).required().messages({
+      'string.email': 'Please enter a valid email address',
+      'string.empty': 'Please enter your email',
+      'any.required': 'Please enter your email',
+    }),
+    password: Joi.string().min(6).max(128).required().messages({
+      'string.min': 'Password must be at least 6 characters',
+      'string.empty': 'Please enter a password',
+      'any.required': 'Please enter a password',
+    }),
+    name: Joi.string().max(255).required().messages({
+      'string.empty': 'Please enter your name',
+      'any.required': 'Please enter your name',
+    }),
   }),
   login: Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
+    email: Joi.string().max(255).required().messages({
+      'string.empty': 'Please enter your email',
+      'any.required': 'Please enter your email',
+    }),
+    password: Joi.string().required().messages({
+      'string.empty': 'Please enter your password',
+      'any.required': 'Please enter your password',
+    }),
   }),
 };
 
@@ -27,7 +44,7 @@ export const register = async (req: AuthRequest, res: Response) => {
   try {
     const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (existing.rows.length > 0) {
-      return res.status(400).json({ error: 'Email already registered' });
+      return res.status(400).json({ error: 'That email is already registered' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -42,7 +59,7 @@ export const register = async (req: AuthRequest, res: Response) => {
     res.status(201).json({ user, token });
   } catch (error: any) {
     if (error?.code === '23505') {
-      return res.status(400).json({ error: 'Email already registered' });
+      return res.status(400).json({ error: 'That email is already registered' });
     }
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
@@ -60,14 +77,14 @@ export const login = async (req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
     const user = result.rows[0];
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
     const token = generateToken(user.id, user.email);

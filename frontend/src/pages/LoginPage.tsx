@@ -2,32 +2,54 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
+import { FormAlert } from '../components/FormAlert';
 import { AuthLayout } from '../components/AuthLayout';
 import { Spinner } from '../components/Spinner';
 import { useAuth } from '../AuthContext';
+
+type FieldErrors = { email?: string; password?: string };
 
 export const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const setField = (key: keyof typeof formData, value: string) => {
+    setFormData({ ...formData, [key]: value });
+    if (fieldErrors[key]) setFieldErrors({ ...fieldErrors, [key]: undefined });
+  };
+
+  const validate = (): FieldErrors => {
+    const errors: FieldErrors = {};
+    if (!formData.email.trim()) errors.email = 'Please enter your email';
+    if (!formData.password) errors.password = 'Please enter your password';
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setLoading(true);
     try {
       const response = await api.post('/auth/login', formData);
       const { token } = response.data;
       login(token);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.error || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -49,21 +71,15 @@ export const LoginPage: React.FC = () => {
         </p>
       }
     >
-      {error && (
-        <div
-          role="alert"
-          className="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
-        >
-          {error}
-        </div>
-      )}
+      {error && <FormAlert message={error} />}
 
       <form onSubmit={handleSubmit} noValidate>
         <FormInput
           label="Email"
           type="email"
           value={formData.email}
-          onChange={(value) => setFormData({ ...formData, email: String(value) })}
+          onChange={(value) => setField('email', String(value))}
+          error={fieldErrors.email}
           required
           autoComplete="email"
           placeholder="you@example.com"
@@ -73,7 +89,8 @@ export const LoginPage: React.FC = () => {
           label="Password"
           type="password"
           value={formData.password}
-          onChange={(value) => setFormData({ ...formData, password: String(value) })}
+          onChange={(value) => setField('password', String(value))}
+          error={fieldErrors.password}
           required
           autoComplete="current-password"
           placeholder="Enter your password"

@@ -2,10 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { FormInput } from '../components/FormInputs';
+import { FormAlert } from '../components/FormAlert';
 import { AuthLayout } from '../components/AuthLayout';
 import { TermsModal } from '../components/TermsModal';
 import { Spinner } from '../components/Spinner';
 import { useAuth } from '../AuthContext';
+import { isValidEmail } from '../utils/validation';
+
+type FieldErrors = {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+};
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -14,23 +23,46 @@ export const RegisterPage: React.FC = () => {
     password: '',
     confirmPassword: '',
   });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const setField = (key: keyof typeof formData, value: string) => {
+    setFormData({ ...formData, [key]: value });
+    if (fieldErrors[key]) setFieldErrors({ ...fieldErrors, [key]: undefined });
+  };
+
+  const validate = (): FieldErrors => {
+    const errors: FieldErrors = {};
+    if (!formData.name.trim()) errors.name = 'Please enter your name';
+
+    if (!formData.email.trim()) errors.email = 'Please enter your email';
+    else if (!isValidEmail(formData.email)) errors.email = 'Please enter a valid email address';
+
+    if (!formData.password) errors.password = 'Please enter a password';
+    else if (formData.password.length < 6) errors.password = 'Password must be at least 6 characters';
+
+    if (!formData.confirmPassword) errors.confirmPassword = 'Please confirm your password';
+    else if (formData.confirmPassword !== formData.password)
+      errors.confirmPassword = "Passwords don't match";
+
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
     setLoading(true);
-
     try {
       const response = await api.post('/auth/register', {
         name: formData.name,
@@ -42,7 +74,7 @@ export const RegisterPage: React.FC = () => {
       login(token);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed');
+      setError(err.response?.data?.error || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -64,20 +96,14 @@ export const RegisterPage: React.FC = () => {
         </p>
       }
     >
-      {error && (
-        <div
-          role="alert"
-          className="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
-        >
-          {error}
-        </div>
-      )}
+      {error && <FormAlert message={error} />}
 
       <form onSubmit={handleSubmit} noValidate>
         <FormInput
           label="Full Name"
           value={formData.name}
-          onChange={(value) => setFormData({ ...formData, name: String(value) })}
+          onChange={(value) => setField('name', String(value))}
+          error={fieldErrors.name}
           required
           autoComplete="name"
           placeholder="John Doe"
@@ -87,7 +113,8 @@ export const RegisterPage: React.FC = () => {
           label="Email"
           type="email"
           value={formData.email}
-          onChange={(value) => setFormData({ ...formData, email: String(value) })}
+          onChange={(value) => setField('email', String(value))}
+          error={fieldErrors.email}
           required
           autoComplete="email"
           placeholder="you@example.com"
@@ -97,7 +124,8 @@ export const RegisterPage: React.FC = () => {
           label="Password"
           type="password"
           value={formData.password}
-          onChange={(value) => setFormData({ ...formData, password: String(value) })}
+          onChange={(value) => setField('password', String(value))}
+          error={fieldErrors.password}
           required
           autoComplete="new-password"
           placeholder="Enter your password"
@@ -107,7 +135,8 @@ export const RegisterPage: React.FC = () => {
           label="Confirm Password"
           type="password"
           value={formData.confirmPassword}
-          onChange={(value) => setFormData({ ...formData, confirmPassword: String(value) })}
+          onChange={(value) => setField('confirmPassword', String(value))}
+          error={fieldErrors.confirmPassword}
           required
           autoComplete="new-password"
           placeholder="Confirm password"

@@ -28,4 +28,5 @@ export const config = {
   trust_proxy: parseTrustProxy(process.env.TRUST_PROXY),
   openai_api_key: process.env.OPENAI_API_KEY || '',
   database_ssl: process.env.DATABASE_SSL === 'true',
+  demo_reset_enabled: process.env.DEMO_RESET_ENABLED === 'true',
 };

@@ -15,6 +15,7 @@ Stack: **Railway** (Express API + Postgres) and **Vercel** (React frontend). Bot
    - `OPENAI_API_KEY` → your OpenAI key
    - `TRUST_PROXY` → `true`
    - `CORS_ORIGIN` → your Vercel URL (fill in after step 2; redeploy after)
+   - `DEMO_RESET_ENABLED` → `true` to enable the public `demo` / `demo` showcase account (see "Demo account" below); omit or `false` to disable
    - `PORT` is provided by Railway automatically — don't set it.
 6. Deploy, then note the public API URL (e.g. `https://whatsmygrade-api.up.railway.app`). Check `GET /health` returns `{ "status": "ok" }`.
 
@@ -31,8 +32,20 @@ Stack: **Railway** (Express API + Postgres) and **Vercel** (React frontend). Bot
 - Open the Vercel URL, register an account, add a course, log a grade, open Grade Coach.
 - Every push to `main` redeploys both halves automatically.
 
+## Demo account
+
+A shared, public showcase account lets portfolio visitors explore the app without signing up.
+
+- Set `DEMO_RESET_ENABLED=true` on the Railway API service. On boot the API seeds the `demo` / `demo`
+  account with a few realistic courses (only if it has none), and re-seeds it nightly so visitor edits
+  self-heal. Login is `demo` / `demo` — the username is stored literally; login skips email-format
+  validation, while registration still requires real emails.
+- To seed or reset by hand, run the script against the database: locally `npm run seed:demo` (from
+  `backend/`), or on Railway `node dist/scripts/seedDemo.js`. It wipes the demo account's courses and
+  re-inserts the curated set; it never touches other users.
+
 ## Environment variables
 
-**Backend (Railway)** — see `backend/.env.example`: `DATABASE_URL`, `DATABASE_SSL`, `JWT_SECRET`, `CORS_ORIGIN`, `TRUST_PROXY`, `OPENAI_API_KEY` (`PORT` is injected by Railway).
+**Backend (Railway)** — see `backend/.env.example`: `DATABASE_URL`, `DATABASE_SSL`, `JWT_SECRET`, `CORS_ORIGIN`, `TRUST_PROXY`, `OPENAI_API_KEY`, `DEMO_RESET_ENABLED` (`PORT` is injected by Railway).
 
 **Frontend (Vercel)** — `VITE_API_URL` (your API origin + `/api`).
